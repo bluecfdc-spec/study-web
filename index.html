@@ -67,6 +67,8 @@ mark{background:var(--pink);color:inherit;border-radius:12px;padding:2px 10px}
 /* 단어장: 영어 단어는 아무리 길어도 한 줄로. 길면 뜻 칸이 줄어들고, 뜻(한글)만 아래로 줄바꿈됩니다 */
 .w-row b{flex:none !important;min-width:38%;white-space:nowrap !important;overflow-wrap:normal !important}
 .w-row span{word-break:keep-all;overflow-wrap:anywhere}
+/* '외웠어요' 버튼이 붙는 단어장에서는 영어 칸을 글자 길이만큼만 써서 뜻 칸을 넓힙니다 */
+.w-list.wb .w-row b{min-width:0}
 </style>
 </head>
 <body>
@@ -75,7 +77,7 @@ mark{background:var(--pink);color:inherit;border-radius:12px;padding:2px 10px}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 // 항상 최신 파일을 받아 오도록 주소 뒤에 시간을 붙여 불러옵니다
-(function(){var v=Date.now();["common.js", "questions.js", "daily.js", "say.js", "engset.js", "notes.js", "student.js", "wordbook.js", "idle.js"].reduce(function(p,f){return p.then(function(){return new Promise(function(ok){var s=document.createElement("script");s.src=f+"?v="+v;s.onload=ok;document.body.appendChild(s);});});},Promise.resolve());})();
+(function(){var v=Date.now();["common.js", "questions.js", "daily.js", "titles.js", "say.js", "engset.js", "notes.js", "student.js", "wordbook.js", "idle.js"].reduce(function(p,f){return p.then(function(){return new Promise(function(ok){var s=document.createElement("script");s.src=f+"?v="+v;s.onload=ok;document.body.appendChild(s);});});},Promise.resolve());})();
 </script>
 </body>
 </html>

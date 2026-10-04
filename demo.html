@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>크림이네 공부방 · 체험하기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+:root{--ink:#3E3140;--sub:#6B5764;--card:#FFFFFF;--pink2:#F29BB5;--mint:#BFE8D9;--yellow:#FFE39A;--line:#F1E2DE}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{color:var(--ink);font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;letter-spacing:-0.01em;background:#FFF4EE}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:#FFF4EE url(assets/bg_wide.webp) center bottom/cover no-repeat}
+@media (orientation:portrait){body::before{background-image:url(assets/bg_phone.webp)}}
+main{max-width:880px;margin:0 auto;padding:40px 20px 56px;display:flex;flex-direction:column;gap:22px}
+.hero{text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.hero img{width:132px;height:auto}
+.eyebrow{font-size:14px;font-weight:700;letter-spacing:.14em;color:#B4688A}
+h1{margin:0;font-size:clamp(30px,6vw,44px);font-weight:800;line-height:1.2}
+.lead{margin:0;font-size:clamp(16px,2.4vw,19px);line-height:1.65;color:var(--sub);max-width:34em}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.card{background:rgba(255,255,255,.94);border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 30px rgba(120,80,90,.10)}
+.card h2{margin:0;font-size:21px;font-weight:800}
+.card p{margin:0;font-size:15px;line-height:1.65;color:var(--sub)}
+.card ol{margin:0;padding-left:1.2em;font-size:15px;line-height:1.75;color:var(--sub)}
+.card b{color:var(--ink)}
+.num{align-self:flex-start;font-size:13px;font-weight:800;background:var(--yellow);border-radius:999px;padding:4px 12px}
+a.go{margin-top:auto;display:flex;align-items:center;justify-content:center;min-height:54px;border-radius:16px;background:var(--pink2);color:#3A2230;font-size:17px;font-weight:800;text-decoration:none}
+a.go:focus-visible,button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.note{background:rgba(255,255,255,.9);border-radius:20px;padding:18px 22px;font-size:15px;line-height:1.7;color:var(--sub)}
+.note b{color:var(--ink)}
+.reset{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+button{font:inherit;font-weight:700;color:var(--ink);cursor:pointer;border:none;border-radius:14px;min-height:46px;padding:0 18px;background:var(--mint)}
+#msg{font-size:14px;color:var(--sub)}
+</style>
+</head>
+<body>
+<main>
+  <div class="hero">
+    <img src="assets/cream_hello.webp" alt="">
+    <div class="eyebrow">체험용 화면</div>
+    <h1>크림이네 공부방</h1>
+    <p class="lead">우리 아이 학교 진도에 맞춘 수업을, 친한 친구들과 각자의 휴대폰으로 함께합니다. 아래 세 화면을 직접 눌러 보세요. 예시로 만든 가상의 학생 6명이 들어 있습니다.</p>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <span class="num">1 · 아이 휴대폰</span>
+      <h2>학생 화면</h2>
+      <ol>
+        <li><b>서연</b>을 누르고 아무 숫자 4개를 누릅니다.</li>
+        <li><b>오늘의 영어 미션</b>으로 매일 숙제를 풁니다.</li>
+        <li><b>단어장</b>에서 틀린 단어를 듣고, 가리고, ‘외웠어요’로 정리합니다.</li>
+      </ol>
+      <a class="go" href="index.html?mock" target="_blank" rel="noopener">학생 화면 열기</a>
+    </section>
+    <section class="card">
+      <span class="num">2 · 선생님</span>
+      <h2>선생님 포털</h2>
+      <ol>
+        <li>왼쪽 <b>숙제 현황</b>을 누릅니다.</li>
+        <li>아이별 숙제 결과, 남은 단어, 외웠다고 뺀 단어를 봅니다.</li>
+        <li><b>확인 시험 보내기</b>를 누르면 아이 휴대폰에 시험이 바로 뜹니다.</li>
+      </ol>
+      <a class="go" href="teacher.html?mock" target="_blank" rel="noopener">선생님 포털 열기</a>
+    </section>
+    <section class="card">
+      <span class="num">3 · 교실 큰 화면</span>
+      <h2>수업 화면</h2>
+      <ol>
+        <li>과목을 고르고 왼쪽 <b>수업</b>을 누르면 움직이는 수업 자료가 열립니다.</li>
+        <li>오른쪽 <b>문제 풀이</b>를 시작하면 아이들 휴대폰에 같은 문제가 뜹니다.</li>
+        <li>수학 ‘각’, 과학 ‘물질의 상태’를 추천합니다.</li>
+      </ol>
+      <a class="go" href="stage.html?mock" target="_blank" rel="noopener">수업 화면 열기</a>
+    </section>
+  </div>
+
+  <div class="note">
+    <b>함께 움직이는 모습을 보려면</b> 컴퓨터에서 학생 화면과 선생님 포털(또는 수업 화면)을 창 두 개로 나란히 열어 보세요. 한쪽에서 누르면 다른 쪽이 바로 바뀝니다.<br>
+    이 체험 화면에서 누른 내용은 지금 쓰시는 기기에만 잠깐 저장되고, 실제 수업 기록과는 완전히 분리되어 있습니다.
+  </div>
+
+  <div class="reset">
+    <button id="reset" type="button">체험 화면을 처음 상태로 되돌리기</button>
+    <span id="msg" role="status"></span>
+  </div>
+</main>
+<script>
+// 체험용 예시 자료: 가상의 학생 6명과 며칠치 숙제 기록을 이 기기(브라우저)에만 넣어 둡니다
+(function () {
+  var VER = '3', KEY = 'sw_mock';
+  function day(off) { return new Date(Date.now() + 4 * 3600000 - off * 86400000).toISOString().slice(0, 10); }
+  function seed() {
+    var now = Date.now(), H = 3600000;
+    var E = function (o) { return { eng5: Object.assign({ title: 'Lesson 5', days: 7 }, o) }; };
+    var log = function (a) { var o = {}; a.forEach(function (x) { o[day(x[0])] = { right: x[1], total: x[2], day: x[3], words: x[4] || null }; }); return o; };
+    return { classes: { gusan1: {
+      students: {
+        s1: { name: '서연', avatar: { hair: '#F29BB5', style: 2 }, pinHash: 'x' },
+        s2: { name: '지우', avatar: { hair: '#7CC7B0', style: 1 }, pinHash: 'x' },
+        s3: { name: '하윤', avatar: { hair: '#9B8CE0', style: 0 }, pinHash: 'x' },
+        s4: { name: '민서', avatar: { hair: '#6B4A3A', style: 3 }, pinHash: 'x' },
+        s5: { name: '채원', avatar: { hair: '#F2B24C', style: 1 }, pinHash: 'x' },
+        s6: { name: '유나', avatar: { hair: '#2F2A33', style: 0 }, pinHash: 'x' }
+      },
+      presence: { s2: true, s4: true, s5: true },
+      daily: {
+        s1: E({ day: 3, lastDate: day(1), streak: 3,
+          missed: { s1b0: 'eyewitnesses', s3b0: 'criminal', s5b0: 'turned around', s6b0: 'in front of', s7b0: 'taller than', s8b1: 'fell off', s10b0: 'ran after' },
+          missN: { s1b0: 2, s3b0: 1, s5b0: 1, s6b0: 3, s7b0: 1, s8b1: 2, s10b0: 1 },
+          wrong: { s6b0: 'in front of', s8b1: 'fell off' },
+          known: { criminal: { w: 'criminal', at: now - 30 * H, n: 1, ok: now - 26 * H }, turned_around: { w: 'turned around', at: now - 20 * H, n: 1 } },
+          checkLog: { c1: { at: now - 26 * H, right: 1, total: 1 } },
+          log: log([[3, 4, 6, 1, ['eyewitnesses', 'criminal']], [2, 7, 9, 2, ['turned around', 'in front of', 'taller than']], [1, 9, 12, 3, ['in front of', 'fell off', 'ran after']]]) }),
+        s2: E({ day: 4, lastDate: day(0), streak: 4,
+          missed: { s0b0: 'threw', s7b0: 'taller than', s12b0: 'old' }, missN: { s0b0: 1, s7b0: 2, s12b0: 1 },
+          known: { threw: { w: 'threw', at: now - 40 * H, n: 1, ok: now - 30 * H }, old: { w: 'old', at: now - 2 * H, n: 1 } },
+          log: log([[3, 6, 6, 1], [2, 8, 9, 2, ['taller than']], [1, 10, 10, 3], [0, 6, 7, 4, ['old']]]) }),
+        s3: E({ day: 2, lastDate: day(1), streak: 2,
+          missed: { s1b0: 'eyewitnesses', s4b0: 'looking at', s6b0: 'in front of' }, missN: { s1b0: 1, s4b0: 2, s6b0: 1 }, wrong: { s4b0: 'looking at' },
+          log: log([[2, 5, 6, 1, ['eyewitnesses']], [1, 6, 8, 2, ['looking at', 'in front of']]]) }),
+        s4: E({ day: 3, lastDate: day(0), streak: 1,
+          missed: { s0b1: 'Museum', s1b0: 'eyewitnesses', s3b0: 'criminal', s5b0: 'turned around', s8b0: 'gray', s9b0: 'wig', s10b1: 'catch', s11b0: 'faster than' },
+          missN: { s0b1: 1, s1b0: 3, s3b0: 2, s5b0: 2, s8b0: 1, s9b0: 1, s10b1: 2, s11b0: 1 },
+          wrong: { s1b0: 'eyewitnesses', s10b1: 'catch' },
+          known: { museum: { w: 'Museum', at: now - 5 * H, n: 1 }, wig: { w: 'wig', at: now - 5 * H, n: 1 }, gray: { w: 'gray', at: now - 5 * H, n: 1 } },
+          log: log([[4, 3, 6, 1, ['Museum', 'eyewitnesses', 'criminal']], [2, 6, 9, 2, ['eyewitnesses', 'turned around', 'criminal']], [0, 8, 13, 3, ['gray', 'wig', 'catch', 'faster than', 'eyewitnesses']]]) }),
+        s5: E({ day: 1, lastDate: day(2), streak: 1, missed: { s2b0: 'say' }, missN: { s2b0: 1 }, log: log([[2, 5, 6, 1, ['say']]]) })
+      },
+      visits: {
+        s1: { v1: { k: 'words', at: now - 50 * H }, v2: { k: 'words', at: now - 27 * H }, v3: { k: 'wrong', at: now - 26 * H }, v4: { k: 'words', at: now - 3 * H } },
+        s2: { v1: { k: 'words', at: now - 2 * H } },
+        s4: { v1: { k: 'words', at: now - 5 * H }, v2: { k: 'words', at: now - 1 * H } }
+      }
+    } } };
+  }
+  function put() { try { localStorage.setItem(KEY, JSON.stringify(seed())); localStorage.setItem('sw_demo_v', VER); return true; } catch (e) { return false; } }
+  var has = false;
+  try { has = !!localStorage.getItem(KEY) && localStorage.getItem('sw_demo_v') === VER; } catch (e) { }
+  if (!has) put();
+  document.getElementById('reset').addEventListener('click', function () {
+    document.getElementById('msg').textContent = put() ? '처음 상태로 되돌렸어요. 열어 둔 화면은 새로고침해 주세요.' : '이 브라우저에서는 저장이 막혀 있어 체험 화면을 준비하지 못했어요.';
+  });
+})();
+</script>
+</body>
+</html>
