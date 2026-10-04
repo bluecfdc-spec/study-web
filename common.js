@@ -147,7 +147,19 @@ const Sound = (function () {
   function bell(f, t0, vol) { tone(f, t0, 0.9, vol); tone(f * 2, t0, 0.5, vol * 0.35); tone(f * 3, t0, 0.25, vol * 0.15); }
   ['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => ac(), { passive: true }));
   return {
-    tap: () => tone(1200, 0, 0.07, 0.15, 'triangle'),
+    // 버튼 소리: 스페이스 서바이버의 메뉴 선택음과 같은 맑은 종소리 두 음 (띠-룽)
+    tap: () => {
+      const c = ac(); if (!c) return;
+      const t = c.currentTime, f = m => 440 * Math.pow(2, (m - 69) / 12);
+      [[88, 0], [95, 0.09]].forEach(q => [[0, 0.16, 'sine'], [12, 0.05, 'sine'], [19, 0.025, 'triangle']].forEach(h => {
+        const o = c.createOscillator(), g = c.createGain(), st = t + q[1];
+        o.type = h[2]; o.frequency.value = f(q[0] + h[0]);
+        g.gain.setValueAtTime(0.0001, st);
+        g.gain.exponentialRampToValueAtTime(h[1], st + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, st + 0.75);
+        o.connect(g); g.connect(c.destination); o.start(st); o.stop(st + 0.8);
+      }));
+    },
     tick: () => tone(880, 0, 0.14, 0.25),
     dingdong: () => { bell(1318.5, 0, 0.3); bell(1046.5, 0.28, 0.3); },
     good: () => { bell(1046.5, 0, 0.25); bell(1318.5, 0.12, 0.25); bell(1568, 0.24, 0.3); },
