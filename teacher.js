@@ -12,7 +12,7 @@ store.on(BASE + '/daily', v => { daily = v || {}; render(); });
 store.on(BASE + '/visits', v => { visits = v || {}; render(); });
 Daily.init(store, () => render());
 
-function koDate(ms) { return new Date(ms + 9 * 3600000).toISOString().slice(0, 10); }
+function koDate(ms) { return new Date(ms + 4 * 3600000).toISOString().slice(0, 10); }   // 숙제 날짜: 한국 시간 새벽 5시에 하루가 바뀝니다
 
 // 숙제 현황: 학생마다 진도 · 회차별 결과(누적) · 꼭 외워야 할 단어 · 복습하러 들어온 기록
 const OLD_VISIT = { review: '틀린 단어 복습(문제)', replay: '수업 문제 다시 풀기' };   // 예전에 있던 메뉴의 기록
@@ -34,7 +34,7 @@ function visitsHTML(id) {
 }
 function homeworkHTML(ids) {
   const today = koDate(store.now());
-  let h = '<h1>숙제 현황</h1><div class="card"><p class="hint">오늘 날짜 ' + today + ' · 영어 미션은 하루에 한 번, 틀린 단어는 다음 날 다시 나옵니다.</p></div>';
+  let h = '<h1>숙제 현황</h1><div class="card"><p class="hint">오늘 날짜 ' + today + ' · 영어 미션은 하루에 한 번(새벽 5시에 새로 열림), 틀린 단어는 다음 날 다시 나옵니다.</p></div>';
   if (!ids.length) return h + '<div class="card"><p class="hint">아직 등록된 학생이 없습니다.</p></div>';
   // 한눈에 보기: 누가 오늘 했는지
   h += '<div class="card"><div class="hw-sum">' + ids.map(id => {

@@ -119,7 +119,7 @@ const Daily = (function () {
   function plain(sen) { return sen.parts.map(p => typeof p === 'string' ? p : sen.blanks[p.b].w).join(''); }
 
   function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
-  function dateOf(ms) { return new Date(ms + 9 * 3600000).toISOString().slice(0, 10); }   // 한국 날짜
+  function dateOf(ms) { return new Date(ms + 4 * 3600000).toISOString().slice(0, 10); }   // 숙제 날짜: 한국 시간 새벽 5시에 하루가 바뀝니다 (9시간 - 5시간)
   function today() { return dateOf(store.now()); }
   function rec(sid) { return (all[sid] || {})[C.id] || {}; }
   function doneToday(sid) { return rec(sid).lastDate === today(); }
