@@ -152,13 +152,23 @@
   function up(e) {
     if (!drawing) return;
     drawing = false; last = null;
-    // 손가락으로 '톡' 누른 것(움직임 없음)은 필기가 아니라 아래 버튼 누르기로 넘깁니다 — 펜을 든 채 '다음'을 누를 수 있게
-    if (downAt && downAt.type === 'touch' && moved < 8) {
+    // 제자리에서 '톡' 누른 것(움직임 없음)이 버튼 위라면, 필기가 아니라 그 버튼을 누른 것으로 넘깁니다
+    // — 펜·레이저·지우개를 켠 채로 펜슬이나 손가락으로 '다음' 같은 버튼을 누를 수 있게
+    if (downAt && moved < 8) {
       ink.style.pointerEvents = 'none';
       const el = document.elementFromPoint(downAt.x, downAt.y);
       ink.style.pointerEvents = '';
       const btn = el && el.closest && el.closest('button,a');
-      if (btn) btn.click();
+      if (btn) {
+        if (tool === 'pen') {   // 버튼 위에 찍힌 점은 지웁니다
+          const rc = ink.getBoundingClientRect();
+          ictx.globalCompositeOperation = 'destination-out';
+          ictx.beginPath(); ictx.arc(downAt.x - rc.left, downAt.y - rc.top, 6, 0, 7); ictx.fill();
+          ictx.globalCompositeOperation = 'source-over';
+        }
+        if (tool === 'laser') trail = [];
+        btn.click();
+      }
     }
   }
   ink.addEventListener('pointerup', up);
