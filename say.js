@@ -87,6 +87,15 @@
     tags.appendChild(b);
   }
   document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-sayq]'); if (b) play(b.dataset.a, b.dataset.b); });
+  // 스피커를 누르면 소리가 나오기 전에도 바로 눌린 티가 나게: 통 튀면서 노랗게 번지는 물결
+  document.head.insertAdjacentHTML('beforeend', '<style>@keyframes sayPop{0%{transform:scale(1)}25%{transform:scale(.8)}60%{transform:scale(1.15)}100%{transform:scale(1)}}@keyframes sayRing{0%{box-shadow:0 0 0 0 rgba(242,178,76,.75)}100%{box-shadow:0 0 0 16px rgba(242,178,76,0)}}' +
+    '.say-on{animation:sayPop .38s ease-out,sayRing .7s ease-out 2;background:#FFE39A !important;color:#4A3B47 !important}</style>');
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('.w-say,.en-say');
+    if (!b) return;
+    b.classList.remove('say-on'); void b.offsetWidth; b.classList.add('say-on');
+    clearTimeout(b._sayT); b._sayT = setTimeout(() => b.classList.remove('say-on'), 1500);
+  });
   window.SayQ = { play: play };   // 수업 화면의 영어 시험에서도 같은 읽기를 씁니다
   new MutationObserver(add).observe(app, { childList: true, subtree: true });
   add();
