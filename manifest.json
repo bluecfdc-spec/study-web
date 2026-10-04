@@ -1,0 +1,8 @@
+{
+  "name": "크림이네 공부방 수업 화면",
+  "short_name": "수업 화면",
+  "start_url": "stage.html",
+  "display": "fullscreen",
+  "background_color": "#FFF4EE",
+  "theme_color": "#FFF4EE"
+}
