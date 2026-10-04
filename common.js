@@ -176,6 +176,13 @@ const Sound = (function () {
   const vp = document.querySelector('meta[name=viewport]');
   if (vp) vp.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
   document.head.insertAdjacentHTML('beforeend', '<style>html,body,button,a{touch-action:manipulation}body{overscroll-behavior:none}</style>');
+  // 글씨체: 프리텐다드 (요즘 앱에서 흔히 쓰는 깔끔한 고딕). 제목은 굵게, 본문은 보통 굵기
+  document.head.insertAdjacentHTML('beforeend',
+    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">' +
+    '<style>body,button,input,h1,h2,.brand,.stu .name{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif !important;letter-spacing:-0.01em}' +
+    'body{font-weight:500}' +
+    'h1,h2,.brand,.hero-t,.qtext,.bignum,.banner,.big,.go,.choice,.key,.name-btn,.d-card,.n-btn,.n-item,.cd,.lz-big,.lz-catname,.lz-card,.chip,.st-num,.stu .name{font-weight:700}' +
+    '.d-card small,.n-btn small,.n-item small,.sub,.key.small,.ghost{font-weight:500}</style>');
   document.addEventListener('dblclick', e => e.preventDefault());
   document.addEventListener('gesturestart', e => e.preventDefault());
   // 수업 화면에서 키보드(화살표·스페이스)로 넘길 때도 버튼과 같은 소리
@@ -198,7 +205,72 @@ const Sound = (function () {
     }
   }
   function ask() { if (!queued) { queued = true; requestAnimationFrame(fit); } }
-  new MutationObserver(ask).observe(app, { childList: true, subtree: true });
+  // ----- 꾸미기: 화면이 그려질 때마다 크림이 그림, 아이콘, 도장을 얹습니다 -----
+  const art = (name, cls) => '<img class="art ' + (cls || '') + '" src="assets/' + name + '.webp" alt="" draggable="false">';
+  const isStage = !!document.title && document.title.indexOf('수업') >= 0;
+  document.head.insertAdjacentHTML('beforeend', '<style>' +
+    'img.art{display:block;user-select:none;-webkit-user-drag:none;pointer-events:none}' +
+    'body.landing{background:#FFF4EE url(assets/' + (isStage ? 'bg_wide' : 'bg_phone') + '.webp) center bottom/cover no-repeat fixed}' +
+    '.hero{display:flex;flex-direction:column;align-items:center;gap:2px}.hero img{width:' + (isStage ? 'clamp(110px,16vh,190px)' : '168px') + ';height:auto}' +
+    '.hero-t{font-size:' + (isStage ? 'clamp(26px,3.6vw,46px)' : '32px') + '}' +
+    '.banner img.art{width:132px;height:auto;margin:0 auto 6px}' +
+    '.st-cell.done img.art{width:86%;height:auto}' +
+    '.d-card,.n-btn{flex-direction:row !important;gap:14px !important;text-align:left}.d-card img.art,.n-btn img.art{width:64px;height:auto;flex:none}' +
+    '.btn-t{display:flex;flex-direction:column;gap:2px}' +
+    '.lz-cat img.art{width:clamp(70px,9vw,120px);height:auto}' +
+    '.cheer-img{display:flex;justify-content:center}.cheer-img img{width:150px;height:auto}' +
+    '#bgmBtn{position:fixed;top:10px;right:10px;z-index:5;min-height:40px;padding:0 14px;border-radius:999px;border:none;background:#fff;color:#6B5764;font-family:inherit;font-size:14px;box-shadow:0 1px 4px rgba(74,59,71,.15)}</style>');
+
+  function wrapText(btn) {   // 버튼 안 글자를 한 덩어리로 묶어 그림 옆에 둡니다
+    const box = document.createElement('span'); box.className = 'btn-t';
+    while (btn.firstChild) box.appendChild(btn.firstChild);
+    btn.appendChild(box);
+  }
+  function deco() {
+    const names = app.querySelector('.names'), sets = app.querySelector('.sets');
+    const calm = !!names || !!app.querySelector('.keys') || !!app.querySelector('.swatches') || (isStage && !!sets && !app.querySelector('.top'));
+    document.body.classList.toggle('landing', !!names || (isStage && calm));
+    const h1 = app.querySelector('h1');
+    if (h1 && !app.querySelector('.hero')) {
+      if (names) h1.insertAdjacentHTML('beforebegin', '<div class="hero">' + art('cream_hello') + '<div class="hero-t">크림이네 공부방</div></div>');
+      else if (isStage && calm) h1.insertAdjacentHTML('beforebegin', '<div class="hero">' + art('cream_sit') + '<div class="hero-t">크림이네 공부방</div></div>');
+    }
+    app.querySelectorAll('.banner.good:not(.art-on)').forEach(e => { e.classList.add('art-on'); e.insertAdjacentHTML('afterbegin', art('cream_happy')); });
+    app.querySelectorAll('.banner.soft:not(.art-on)').forEach(e => { e.classList.add('art-on'); e.insertAdjacentHTML('afterbegin', art('cream_cheer')); });
+    app.querySelectorAll('.st-cell.done svg').forEach(e => { e.outerHTML = art('stamp_complete'); });
+    app.querySelectorAll('.d-card:not(.art-on)').forEach(e => { e.classList.add('art-on'); wrapText(e); e.insertAdjacentHTML('afterbegin', art('icon_english')); });
+    app.querySelectorAll('.n-btn:not(.art-on)').forEach(e => { e.classList.add('art-on'); wrapText(e); e.insertAdjacentHTML('afterbegin', art('obj_pencil')); });
+    app.querySelectorAll('.lz-cat:not(.art-on)').forEach(e => {
+      e.classList.add('art-on');
+      const n = e.querySelector('.lz-catname'), svg = e.querySelector('svg');
+      const pic = n && { '물건': 'obj_apple', '장소': 'obj_school' }[n.textContent];
+      if (pic && svg) svg.outerHTML = art(pic);
+    });
+    Bgm.want(calm);
+  }
+
+  // ----- 배경음악: 첫 화면(로그인 전)과 수업 화면 대기실에서만 잔잔하게 -----
+  const Bgm = (function () {
+    let audio = null, wanted = false, unlocked = false, off = local('sw_bgm') === 'off';
+    const btn = document.createElement('button');
+    btn.id = 'bgmBtn'; btn.type = 'button'; btn.hidden = true; document.body.appendChild(btn);
+    function label() { btn.textContent = off ? '음악 켜기' : '음악 끄기'; }
+    function sync() {
+      btn.hidden = !wanted; label();
+      if (!unlocked) return;
+      if (wanted && !off) {
+        if (!audio) { audio = new Audio('assets/bgm_home.mp3'); audio.loop = true; audio.volume = 0.3; }
+        audio.play().catch(() => { });
+      } else if (audio) audio.pause();
+    }
+    btn.addEventListener('click', () => { off = !off; local('sw_bgm', off ? 'off' : 'on'); unlocked = true; sync(); });
+    ['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => { if (!unlocked) { unlocked = true; sync(); } }, { passive: true }));
+    document.addEventListener('visibilitychange', () => { if (document.hidden && audio) audio.pause(); else sync(); });
+    return { want: function (w) { if (w !== wanted) { wanted = w; sync(); } } };
+  })();
+
+  new MutationObserver(() => { deco(); ask(); }).observe(app, { childList: true, subtree: true });
+  deco();
   window.addEventListener('resize', ask);
   window.addEventListener('load', ask);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(ask);
