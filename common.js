@@ -229,7 +229,7 @@ const Sound = (function () {
     '.btn-t{display:flex;flex-direction:column;gap:2px}' +
     '.lz-cat img.art{width:clamp(70px,9vw,120px);height:auto}' +
     '.cheer-img{display:flex;justify-content:center}.cheer-img img{width:150px;height:auto}' +
-    '#bgmBtn{position:fixed;top:10px;right:10px;z-index:5;min-height:40px;padding:0 14px;border-radius:999px;border:none;background:#fff;color:#6B5764;font-family:inherit;font-size:14px;box-shadow:0 1px 4px rgba(74,59,71,.15)}</style>');
+    '#bgmBtn{position:fixed;top:8px;right:8px;z-index:5;width:34px;height:34px;padding:0;border-radius:50%;border:none;background:rgba(255,255,255,.7);color:#B79AA6;display:flex;align-items:center;justify-content:center}#bgmBtn[hidden]{display:none}#bgmBtn.off{color:#D3C3C9}#bgmBtn svg{width:18px;height:18px}</style>');
 
   function wrapText(btn) {   // 버튼 안 글자를 한 덩어리로 묶어 그림 옆에 둡니다
     const box = document.createElement('span'); box.className = 'btn-t';
@@ -257,26 +257,39 @@ const Sound = (function () {
       const pic = n && { '물건': 'obj_apple', '장소': 'obj_school' }[n.textContent];
       if (pic && svg) svg.outerHTML = art(pic);
     });
-    Bgm.want(calm);
+    Bgm.want(true);   // 배경음악은 로그인 뒤에도 계속 이어집니다 (오른쪽 위 스피커로 끄고 켬)
   }
 
-  // ----- 배경음악: 첫 화면(로그인 전)과 수업 화면 대기실에서만 잔잔하게 -----
+  // ----- 배경음악: 한번 켜지면 화면이 바뀌어도 계속. 다시 열면 첫 터치 때 이어서 나옵니다 (브라우저가 터치 전에는 소리를 막음) -----
   const Bgm = (function () {
     let audio = null, wanted = false, unlocked = false, off = local('sw_bgm') === 'off';
     const btn = document.createElement('button');
     btn.id = 'bgmBtn'; btn.type = 'button'; btn.hidden = true; document.body.appendChild(btn);
-    function label() { btn.textContent = off ? '음악 켜기' : '음악 끄기'; }
+    const spk = '<path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/>';
+    function label() {
+      btn.className = off ? 'off' : '';
+      btn.setAttribute('aria-label', off ? '음악 켜기' : '음악 끄기');
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">' + spk +
+        (off ? '<path d="M17 9.5l4.5 5M21.5 9.5l-4.5 5"/>' : '<path d="M16.5 9a4.5 4.5 0 010 6M19 6.5a8 8 0 010 11"/>') + '</svg>';
+    }
     function sync() {
       btn.hidden = !wanted; label();
       if (!unlocked) return;
       if (wanted && !off) {
-        if (!audio) { audio = new Audio('assets/bgm_home.mp3'); audio.loop = true; audio.volume = 0.3; }
+        if (!audio) {
+          audio = new Audio('assets/bgm_home.mp3'); audio.loop = true; audio.volume = 0.3;
+          // 다른 화면으로 넘어갔다 와도 듣던 자리부터 이어서
+          const at = Number(local('sw_bgm_t')) || 0;
+          if (at > 0) audio.addEventListener('loadedmetadata', () => { try { if (at < audio.duration) audio.currentTime = at; } catch (e) { } }, { once: true });
+          setInterval(() => { if (audio && !audio.paused) local('sw_bgm_t', String(audio.currentTime)); }, 2000);
+        }
         audio.play().catch(() => { });
       } else if (audio) audio.pause();
     }
     btn.addEventListener('click', () => { off = !off; local('sw_bgm', off ? 'off' : 'on'); unlocked = true; sync(); });
     ['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => { if (!unlocked) { unlocked = true; sync(); } }, { passive: true }));
     document.addEventListener('visibilitychange', () => { if (document.hidden && audio) audio.pause(); else sync(); });
+    window.addEventListener('pagehide', () => { if (audio && !audio.paused) local('sw_bgm_t', String(audio.currentTime)); });
     return { want: function (w) { if (w !== wanted) { wanted = w; sync(); } } };
   })();
 
