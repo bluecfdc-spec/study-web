@@ -8,7 +8,7 @@ document.head.insertAdjacentHTML('beforeend', '<style>' +
   '.st-cell svg{width:78%;height:auto}.st-num{font-size:19px}' +
   '.n-btn{background:var(--pink);border-radius:26px;width:100%;display:flex;flex-direction:column;align-items:center;gap:2px}' +
   '.lb-card{border-radius:26px;width:100%;display:flex;align-items:center}.lb-card.c-mint{background:var(--mint)}.lb-card.c-pink{background:var(--pink)}.lb-card.c-blue{background:var(--blue)}' +
-  '.d-card,.n-btn,.lb-card{min-height:88px;justify-content:center;padding:12px 18px;font-size:23px}.d-card small,.n-btn small,.lb-card small{font-size:15px;color:var(--sub)}' +
+  '.d-card,.n-btn,.lb-card{min-height:100px;justify-content:center;padding:12px 18px;font-size:23px}.d-card small,.n-btn small,.lb-card small{font-size:15px;color:var(--sub)}' +
   // 친구 줄: 한 칸에 얼굴·이름·상태를 세로로. 친구가 많아지면 다음 줄로 넘어가고 글씨는 가로로만 씁니다
   '.lb-friends{display:grid;grid-template-columns:repeat(auto-fit,minmax(60px,1fr));gap:8px 4px;background:#fff;border-radius:22px;padding:10px 8px}' +
   '.lb-f{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;text-align:center;border-radius:14px;padding:4px 2px}.lb-f.me{background:#FFF4EE}' +
@@ -84,11 +84,10 @@ const Notes = (function () {
       store.on(BASE + '/daily', v => { daily = v || {}; onChange(); });
     },
     stamps: function (sid) { return Stamps.html(sid, daily); },
-    // 대기실 배너: 미션 아래로 단어장 → 틀린 단어 복습하기 → 수업 중 문제 다시 풀기
+    // 대기실 배너: 미션 아래로 단어장 → 수업 중 문제 다시 풀기
     lobbyButtons: function (sid) {
       const w = Daily.words(sid).length, n = mine(sid).reduce((k, s) => k + s.wrong.length, 0), cls = mine(sid).length;
-      return '<button class="lb-card c-mint" data-art="cream_book" data-act="d-words">단어장<small>' + (w ? '틀린 단어 ' + w + '개 한눈에 보기' : '틀린 단어가 생기면 여기에 모여요') + '</small></button>' +
-        '<button class="lb-card c-pink" data-art="obj_pencil" data-act="d-review">틀린 영어 단어 복습하기<small>' + (w ? '문제로 다시 풀기 · ' + Daily.missed(sid).length + '문제' : '아직 복습할 단어가 없어요') + '</small></button>' +
+      return '<button class="lb-card c-mint" data-art="cream_book" data-act="d-words">틀린 단어 단어장<small>' + (w ? '틀린 단어 ' + w + '개 · 가리고 외워 보기' : '틀린 단어가 생기면 여기에 모여요') + '</small></button>' +
         '<button class="lb-card c-blue" data-art="obj_school" data-act="n-home">수업 중 문제 다시 풀기<small>' + (cls ? '오답노트 ' + n + '개 · 수업 ' + cls + '번' : '수업에서 푼 문제가 여기에 모여요') + '</small></button>';
     },
     html: function (sid) {

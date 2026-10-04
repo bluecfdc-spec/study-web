@@ -59,7 +59,7 @@ const DAILY = {
 
 const Daily = (function () {
   const C = DAILY;
-  let store = null, all = {}, S = null, result = null, view = '', hide = false;   // view 'words' = 단어장
+  let store = null, all = {}, S = null, result = null, view = '', hide = '';   // hide: 'ko' 뜻 가리기, 'en' 영어 가리기   // view 'words' = 단어장
 
   // 문장을 조각(글자, 빈칸)으로 나눕니다
   const sentences = [], byId = {}, pools = {};
@@ -96,7 +96,8 @@ const Daily = (function () {
     '.w-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid #F1E2DE;font-size:17px}.w-row:first-child{border-top:none}' +
     '.w-row b{flex:0 0 46%;font-size:19px;font-weight:700;overflow-wrap:anywhere}.w-row span{flex:1;min-width:0;color:var(--sub)}' +
     '.w-row i{flex:none;font-style:normal;font-size:13px;background:var(--pink);border-radius:999px;padding:3px 9px}' +
-    '.w-list.hide span{visibility:hidden}' +
+    '.w-list.hide-ko span{visibility:hidden}.w-list.hide-en b{visibility:hidden}' +
+    '.w-tog{display:grid;grid-template-columns:1fr 1fr;gap:10px}.w-tog button{min-height:56px;border-radius:20px;background:#fff;font-size:17px;font-weight:700;border:3px solid transparent}.w-tog button.on{background:var(--yellow);border-color:var(--ink)}' +
     '.d-list{font-size:17px;line-height:1.9;text-align:center}.d-list b{font-family:system-ui,sans-serif}</style>');
 
   function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
@@ -198,11 +199,11 @@ const Daily = (function () {
       if (view === 'words') {
         const ws = wordList(sid);
         return '<h1>단어장</h1><p class="sub">' + (ws.length ? '숙제에서 틀린 단어 ' + ws.length + '개 · 많이 틀린 순' : '아직 틀린 단어가 없어요') + '</p>' +
-          (ws.length ? '<div class="w-list' + (hide ? ' hide' : '') + '">' + ws.map(o => '<div class="w-row"><b class="d-en" style="line-height:1.3">' + esc(o.w) + '</b><span>' + esc(o.ko) + '</span>' + (o.n > 1 ? '<i>' + o.n + '번</i>' : '') + '</div>').join('') + '</div>' +
-            '<button class="ghost" data-act="d-hide">' + (hide ? '뜻 다시 보기' : '뜻 가리고 외워 보기') + '</button>' +
-            '<button class="big" data-act="d-review" style="margin-top:auto">틀린 단어 복습하기</button>'
+          (ws.length ? '<div class="w-list' + (hide ? ' hide-' + hide : '') + '">' + ws.map(o => '<div class="w-row"><b class="d-en" style="line-height:1.3">' + esc(o.w) + '</b><span>' + esc(o.ko) + '</span>' + (o.n > 1 ? '<i>' + o.n + '번</i>' : '') + '</div>').join('') + '</div>' +
+            '<div class="w-tog"><button class="' + (hide === 'ko' ? 'on' : '') + '" data-act="d-hide" data-h="ko">' + (hide === 'ko' ? '뜻 다시 보기' : '뜻 가리고 보기') + '</button>' +
+            '<button class="' + (hide === 'en' ? 'on' : '') + '" data-act="d-hide" data-h="en">' + (hide === 'en' ? '영어 다시 보기' : '영어 가리고 보기') + '</button></div><span style="margin-top:auto"></span>'
             : '<div class="card"><p class="sub">영어 미션에서 틀린 단어가 생기면 여기에 모여요.</p></div><span style="margin-top:auto"></span>') +
-          '<button class="ghost" data-act="d-exit">대기실로</button>';
+          '<button class="big" data-act="d-exit">대기실로</button>';
       }
       if (result && result.practice) {
         return '<h1>한 바퀴 끝!</h1><div class="card"><p class="sub">이번에 맞힌 단어</p><p class="bignum">' + result.right + ' / ' + result.total + '</p></div>' +
@@ -242,8 +243,8 @@ const Daily = (function () {
     click: async function (act, b, sid) {
       if (act === 'd-open') { result = null; S = null; view = ''; return 'daily'; }
       if (act === 'd-exit') { result = null; S = null; view = ''; return 'lobby'; }
-      if (act === 'd-words') { result = null; S = null; view = 'words'; hide = false; logVisit(store, sid, 'words'); return 'daily'; }
-      if (act === 'd-hide') { hide = !hide; return 'daily'; }
+      if (act === 'd-words') { result = null; S = null; view = 'words'; hide = ''; logVisit(store, sid, 'words'); return 'daily'; }
+      if (act === 'd-hide') { hide = hide === b.dataset.h ? '' : b.dataset.h; return 'daily'; }
       if (act === 'd-start') { begin(sid); return 'daily'; }
       if (act === 'd-review') { result = null; S = null; if (missedIds(sid).length) { view = ''; beginPractice(sid); } else view = 'words'; return 'daily'; }
       if (act === 'd-pick' && S && S.picked == null) {
