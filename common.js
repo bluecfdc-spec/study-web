@@ -184,6 +184,9 @@ const Sound = (function () {
   const vp = document.querySelector('meta[name=viewport]');
   if (vp) vp.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
   document.head.insertAdjacentHTML('beforeend', '<style>html,body,button,a{touch-action:manipulation}body{overscroll-behavior:none}</style>');
+  // 배경 사진: 학생·수업·선생님 화면 어디서나 책상 사진이 뒤에 깔립니다 (세로 화면은 세로 사진)
+  document.head.insertAdjacentHTML('beforeend', '<style>body::before{content:"";position:fixed;left:0;top:0;width:100vw;height:100vh;height:100lvh;z-index:-1;pointer-events:none;background:#FFF4EE url(assets/bg_wide.webp) center bottom/cover no-repeat}' +
+    '@media (orientation:portrait){body::before{background-image:url(assets/bg_phone.webp)}}</style>');
   // 글씨체: 프리텐다드 (요즘 앱에서 흔히 쓰는 깔끔한 고딕). 제목은 굵게, 본문은 보통 굵기
   document.head.insertAdjacentHTML('beforeend',
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">' +
@@ -218,7 +221,6 @@ const Sound = (function () {
   const isStage = !!document.title && document.title.indexOf('수업') >= 0;
   document.head.insertAdjacentHTML('beforeend', '<style>' +
     'img.art{display:block;user-select:none;-webkit-user-drag:none;pointer-events:none}' +
-    'body.landing{background:#FFF4EE url(assets/' + (isStage ? 'bg_wide' : 'bg_phone') + '.webp) center bottom/cover no-repeat fixed}' +
     '.hero{display:flex;flex-direction:column;align-items:center;gap:2px}.hero img{width:' + (isStage ? 'clamp(110px,16vh,190px)' : '168px') + ';height:auto}' +
     '.hero-t{font-size:' + (isStage ? 'clamp(26px,3.6vw,46px)' : '32px') + '}' +
     '.banner img.art{width:132px;height:auto;margin:0 auto 6px}' +

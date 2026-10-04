@@ -84,11 +84,11 @@ const Notes = (function () {
       store.on(BASE + '/daily', v => { daily = v || {}; onChange(); });
     },
     stamps: function (sid) { return Stamps.html(sid, daily); },
-    // 대기실 배너: 미션 아래로 단어장 → 수업 중 문제 다시 풀기
+    // 대기실 배너: 미션 아래로 단어장 → 수업 중 오답노트 (누르면 바로 과목·단원 목록)
     lobbyButtons: function (sid) {
       const w = Daily.words(sid).length, n = mine(sid).reduce((k, s) => k + s.wrong.length, 0), cls = mine(sid).length;
       return '<button class="lb-card c-mint" data-art="cream_book" data-act="d-words">틀린 단어 단어장<small>' + (w ? '틀린 단어 ' + w + '개 · 가리고 외워 보기' : '틀린 단어가 생기면 여기에 모여요') + '</small></button>' +
-        '<button class="lb-card c-blue" data-art="obj_school" data-act="n-home">수업 중 문제 다시 풀기<small>' + (cls ? '오답노트 ' + n + '개 · 수업 ' + cls + '번' : '수업에서 푼 문제가 여기에 모여요') + '</small></button>';
+        '<button class="lb-card c-blue" data-art="obj_school" data-act="n-mode" data-m="wrong">수업 중 오답노트<small>' + (cls ? (n ? '틀린 문제 ' + n + '개 · 단원별로 다시 풀기' : '틀린 문제가 없어요!') : '수업에서 틀린 문제가 여기에 모여요') + '</small></button>';
     },
     html: function (sid) {
       if (!run && !mode) {
@@ -100,11 +100,11 @@ const Notes = (function () {
       }
       if (!run) {
         const list = mine(sid), w = mode === 'wrong';
-        return '<h1>' + (w ? '오답노트' : '수업 문제 다시 풀기') + '</h1><p class="sub">' + (w ? '틀린 문제는 몇 번이든 다시 풀 수 있어요' : '수업에서 푼 문제를 처음부터 다시 풀어요') + '</p>' +
+        return '<h1>' + (w ? '수업 중 오답노트' : '수업 문제 다시 풀기') + '</h1><p class="sub">' + (w ? '틀린 문제는 몇 번이든 다시 풀 수 있어요' : '수업에서 푼 문제를 처음부터 다시 풀어요') + '</p>' +
           (list.length ? list.map(s => { const k = (w ? s.wrong : s.every).length; return '<button class="n-item" data-act="n-open" data-id="' + esc(s.id) + '"' + (k ? '' : ' disabled') + '>' +
             esc(s.set.subject) + ' · ' + esc(s.set.unit) + '<small>' + dayText(s.at) + ' · ' + (w ? (k ? '틀린 문제 ' + k + '개' : '다 맞혔어요!') : '문제 ' + k + '개') + '</small></button>'; }).join('')
             : '<div class="card"><p class="sub">아직 수업에서 푼 문제가 없어요.</p></div>') +
-          '<button class="big" data-act="n-home" style="margin-top:auto">뒤로</button><button class="ghost" data-act="n-exit">대기실로</button>';
+          '<button class="big" data-act="n-exit" style="margin-top:auto">대기실로</button>';
       }
       const set = run.set, total = run.list.length, label = run.mode === 'wrong' ? '오답노트' : '다시 풀기';
       if (run.i >= total) {

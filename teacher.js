@@ -15,8 +15,8 @@ Daily.init(store, () => render());
 function koDate(ms) { return new Date(ms + 9 * 3600000).toISOString().slice(0, 10); }
 
 // 숙제 현황: 학생마다 진도 · 회차별 결과(누적) · 꼭 외워야 할 단어 · 복습하러 들어온 기록
-const OLD_VISIT = { review: '틀린 단어 복습(문제)' };   // 예전에 있던 메뉴의 기록
-const VISIT = { words: '단어장', wrong: '오답노트', replay: '수업 문제 다시 풀기' };
+const OLD_VISIT = { review: '틀린 단어 복습(문제)', replay: '수업 문제 다시 풀기' };   // 예전에 있던 메뉴의 기록
+const VISIT = { words: '단어장', wrong: '수업 중 오답노트' };
 function koTime(ms) { const d = new Date(ms + 9 * 3600000), z = n => String(n).padStart(2, '0'); return (d.getUTCMonth() + 1) + '월 ' + d.getUTCDate() + '일 ' + z(d.getUTCHours()) + ':' + z(d.getUTCMinutes()); }
 function visitsHTML(id) {
   const list = Object.keys(visits[id] || {}).map(k => visits[id][k]).filter(v => v && v.at).sort((x, y) => y.at - x.at);
