@@ -124,3 +124,34 @@ function correctCount(live, set, sid) {
   set.items.forEach((it, i) => { if (answerOf(live, i, sid) === it.a) n++; });
   return n;
 }
+
+// ----- 효과음 (파일 없이 브라우저가 직접 만드는 소리) -----
+const Sound = (function () {
+  let ctx = null;
+  function ac() {
+    try {
+      if (!ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ctx = new C(); }
+      if (ctx.state === 'suspended') ctx.resume();
+    } catch (e) { return null; }
+    return ctx;
+  }
+  function tone(f, t0, dur, vol, type) {
+    const c = ac(); if (!c) return;
+    const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+    o.type = type || 'sine'; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function bell(f, t0, vol) { tone(f, t0, 0.9, vol); tone(f * 2, t0, 0.5, vol * 0.35); tone(f * 3, t0, 0.25, vol * 0.15); }
+  ['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => ac(), { passive: true }));
+  return {
+    tap: () => tone(1200, 0, 0.07, 0.15, 'triangle'),
+    tick: () => tone(880, 0, 0.14, 0.25),
+    dingdong: () => { bell(1318.5, 0, 0.3); bell(1046.5, 0.28, 0.3); },
+    good: () => { bell(1046.5, 0, 0.25); bell(1318.5, 0.12, 0.25); bell(1568, 0.24, 0.3); },
+    soft: () => { tone(523.3, 0, 0.35, 0.2); tone(440, 0.18, 0.45, 0.2); },
+    fanfare: () => [1046.5, 1318.5, 1568, 2093].forEach((f, i) => bell(f, i * 0.15, 0.28))
+  };
+})();
