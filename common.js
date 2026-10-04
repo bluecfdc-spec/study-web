@@ -136,6 +136,9 @@ function correctCount(live, set, sid) {
 // ----- 효과음 (파일 없이 브라우저가 직접 만드는 소리) -----
 const Sound = (function () {
   let ctx = null, sfxOff = local('sw_sfx') === 'off';   // 효과음 끄기 (배경음악과 따로)
+  let master = null;
+  // 모든 효과음이 지나가는 전체 음량 (조금 시끄러워서 약 18% 줄임)
+  function out(c) { if (!master) { master = c.createGain(); master.gain.value = 0.82; master.connect(c.destination); } return master; }
   function ac() {
     try {
       if (!ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ctx = new C(); }
@@ -155,7 +158,7 @@ const Sound = (function () {
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + 0.05);
+    o.connect(g); g.connect(out(c)); o.start(t); o.stop(t + dur + 0.05);
   }); }
   function bell(f, t0, vol) { tone(f, t0, 0.9, vol); tone(f * 2, t0, 0.5, vol * 0.35); tone(f * 3, t0, 0.25, vol * 0.15); }
   ['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => window.addEventListener(ev, () => ac(), { passive: true }));
@@ -171,10 +174,11 @@ const Sound = (function () {
         g.gain.setValueAtTime(0.0001, st);
         g.gain.exponentialRampToValueAtTime(h[1], st + 0.012);
         g.gain.exponentialRampToValueAtTime(0.0001, st + 0.75);
-        o.connect(g); g.connect(c.destination); o.start(st); o.stop(st + 0.8);
+        o.connect(g); g.connect(out(c)); o.start(st); o.stop(st + 0.8);
       }));
     }),
     tick: () => tone(880, 0, 0.14, 0.25),
+    known: () => bell(1568, 0.16, 0.13),   // 단어장 '외웠어요': 버튼 소리 뒤에 살짝 '딩'
     dingdong: () => { bell(1318.5, 0, 0.3); bell(1046.5, 0.28, 0.3); },
     good: () => { bell(1046.5, 0, 0.25); bell(1318.5, 0.12, 0.25); bell(1568, 0.24, 0.3); },
     soft: () => { tone(523.3, 0, 0.35, 0.2); tone(440, 0.18, 0.45, 0.2); },
@@ -199,6 +203,7 @@ const Sound = (function () {
     '.d-card small,.n-btn small,.lb-card small,.n-item small,.sub,.key.small,.ghost{font-weight:500}</style>');
   document.addEventListener('dblclick', e => e.preventDefault());
   document.addEventListener('gesturestart', e => e.preventDefault());
+  document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-act="d-known"]')) Sound.known(); });
   // 수업 화면에서 키보드(화살표·스페이스)로 넘길 때도 버튼과 같은 소리
   document.addEventListener('keydown', e => { if (typeof lessonMove === 'function' && ['ArrowRight', 'ArrowLeft', ' '].includes(e.key)) Sound.tap(); });
 
