@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>우리 반 공부방</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap">
+<style>
+:root{--bg:#FFF4EE;--ink:#4A3B47;--sub:#6B5764;--card:#FFFFFF;--pink:#FFC9D6;--pink2:#F29BB5;--mint:#BFE8D9;--yellow:#FFE39A;--blue:#CFE0FF;--ok:#2E7D5E}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Jua','Apple SD Gothic Neo','Malgun Gothic',sans-serif;-webkit-tap-highlight-color:transparent}
+#app{max-width:440px;margin:0 auto;min-height:100%;padding:28px 22px 32px;display:flex;flex-direction:column;gap:18px}
+h1{margin:0;font-size:30px;font-weight:400;text-align:center}
+p{margin:0}
+.sub{color:var(--sub);font-size:17px;text-align:center}
+button{font-family:inherit;color:var(--ink);cursor:pointer;border:none}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.card{background:var(--card);border-radius:28px;padding:22px}
+.names{display:flex;flex-direction:column;gap:14px}
+.name-btn{display:flex;align-items:center;gap:16px;background:var(--card);border-radius:26px;padding:14px 20px;font-size:26px;text-align:left;min-height:84px}
+.name-btn:nth-child(3n+1){background:var(--pink)}
+.name-btn:nth-child(3n+2){background:var(--mint)}
+.name-btn:nth-child(3n){background:var(--yellow)}
+.dots{display:flex;justify-content:center;gap:16px;margin:6px 0}
+.dot{width:22px;height:22px;border-radius:50%;background:#F1E2DE}
+.dot.on{background:var(--pink2)}
+.keys{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.key{height:72px;border-radius:22px;background:var(--card);font-size:30px}
+.key:active{background:var(--yellow)}
+.key.small{font-size:18px;background:transparent;color:var(--sub)}
+.msg{min-height:24px;text-align:center;font-size:17px;color:#B4325A}
+.swatches{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.swatch{width:48px;height:48px;border-radius:50%;border:4px solid #FFFFFF}
+.swatch.on{border-color:var(--ink)}
+.styles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.style-btn{height:56px;border-radius:20px;background:#FBEDE8;font-size:18px}
+.style-btn.on{background:var(--mint);box-shadow:inset 0 0 0 3px var(--ink)}
+.big{height:68px;border-radius:24px;background:var(--pink2);font-size:24px;color:#3A2230}
+.ghost{background:transparent;color:var(--sub);font-size:16px;height:44px;text-decoration:underline}
+.center{display:flex;justify-content:center}
+.label{font-size:17px;color:var(--sub);margin-bottom:10px}
+.lobby{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.seat{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:17px}
+.seat.off{opacity:.4}
+.state{font-size:14px;color:var(--sub)}
+.seat.on .state{color:var(--ok)}
+.wait{background:var(--yellow);border-radius:24px;padding:18px;text-align:center;font-size:19px;line-height:1.5}
+.row{display:flex;justify-content:space-between;gap:10px}
+.mock{background:var(--blue);border-radius:14px;padding:8px 12px;font-size:14px;text-align:center}
+</style>
+</head>
+<body>
+<main id="app"><p class="sub">불러오는 중…</p></main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="common.js"></script>
+<script>
+const app = document.getElementById('app');
+const store = makeStore();
+let students = {}, presence = {}, loaded = false;
+let screen = 'names', me = null, pin = '', firstPin = '', pinMode = '', msg = '', draft = null;
+
+store.on(BASE + '/students', v => {
+  students = v || {};
+  if (!loaded) { loaded = true; autoLogin(); }
+  if (me && !students[me]) { local('sw_sid', null); me = null; screen = 'names'; }
+  render();
+});
+store.on(BASE + '/presence', v => { presence = v || {}; if (screen === 'lobby') render(); });
+
+function autoLogin() {
+  const sid = local('sw_sid');
+  if (sid && students[sid] && students[sid].pinHash) enter(sid);
+}
+function enter(sid) {
+  me = sid; local('sw_sid', sid);
+  store.presence(BASE + '/presence/' + sid);
+  if (students[sid].avatar) screen = 'lobby'; else openAvatar();
+}
+function openAvatar() {
+  const a = (students[me] && students[me].avatar) || {};
+  draft = { hair: a.hair || HAIRS[0], style: a.style || 0 };
+  screen = 'avatar';
+}
+
+function render() {
+  if (!loaded) return;
+  const mock = MOCK ? '<div class="mock">연습용 화면입니다. 저장되지 않아요.</div>' : '';
+  let h = '';
+  if (screen === 'names') {
+    const ids = Object.keys(students);
+    h = '<h1>누구인가요?</h1><p class="sub">내 이름을 눌러 주세요</p>';
+    if (!ids.length) h += '<div class="card"><p class="sub">선생님이 아직 친구들을 등록하지 않았어요.</p></div>';
+    h += '<div class="names">' + ids.map(id =>
+      '<button class="name-btn" data-act="pick" data-id="' + esc(id) + '">' + avatarSVG(students[id].avatar, 56) + '<span>' + esc(students[id].name) + '</span></button>'
+    ).join('') + '</div>';
+  } else if (screen === 'pin') {
+    const titles = { set1: '비밀번호를 만들어요', set2: '한 번 더 눌러 주세요', enter: '비밀번호를 눌러 주세요' };
+    const subs = { set1: '나만 아는 숫자 4개', set2: '방금 정한 숫자 4개', enter: esc(students[me].name) + ' 맞죠?' };
+    h = '<h1>' + titles[pinMode] + '</h1><p class="sub">' + subs[pinMode] + '</p>' +
+      '<div class="dots" aria-label="입력한 숫자 ' + pin.length + '개">' + [0, 1, 2, 3].map(i => '<div class="dot' + (i < pin.length ? ' on' : '') + '"></div>').join('') + '</div>' +
+      '<p class="msg" role="status">' + esc(msg) + '</p>' +
+      '<div class="keys">' + [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => '<button class="key" data-act="key" data-n="' + n + '">' + n + '</button>').join('') +
+      '<button class="key small" data-act="back">처음으로</button><button class="key" data-act="key" data-n="0">0</button><button class="key small" data-act="del">지우기</button></div>';
+  } else if (screen === 'avatar') {
+    h = '<h1>내 캐릭터 꾸미기</h1>' +
+      '<div class="center">' + avatarSVG(draft, 190) + '</div>' +
+      '<div class="card"><div class="label">머리 색</div><div class="swatches">' + HAIRS.map((c, i) =>
+        '<button class="swatch' + (draft.hair === c ? ' on' : '') + '" style="background:' + c + '" data-act="hair" data-c="' + c + '" aria-label="' + HAIR_NAMES[i] + '" aria-pressed="' + (draft.hair === c) + '"></button>').join('') + '</div>' +
+      '<div class="label" style="margin-top:18px">머리 모양</div><div class="styles">' + STYLES.map((s, i) =>
+        '<button class="style-btn' + (draft.style === i ? ' on' : '') + '" data-act="style" data-i="' + i + '" aria-pressed="' + (draft.style === i) + '">' + s + '</button>').join('') + '</div></div>' +
+      '<button class="big" data-act="saveAvatar">완성!</button>';
+  } else if (screen === 'lobby') {
+    const ids = Object.keys(students);
+    h = '<h1>대기실</h1><p class="sub">' + esc(students[me].name) + ', 어서 와요</p>' +
+      '<div class="card"><div class="lobby">' + ids.map(id => {
+        const on = !!presence[id] || id === me;
+        return '<div class="seat ' + (on ? 'on' : 'off') + '">' + avatarSVG(students[id].avatar, 84) + '<div>' + esc(students[id].name) + (id === me ? ' (나)' : '') + '</div><div class="state">' + (on ? '들어왔어요' : '아직이에요') + '</div></div>';
+      }).join('') + '</div></div>' +
+      '<div class="wait">선생님이 시작하면<br>여기에 퀴즈가 열려요</div>' +
+      '<div class="row" style="margin-top:auto"><button class="ghost" data-act="editAvatar">캐릭터 바꾸기</button><button class="ghost" data-act="logout">나가기</button></div>';
+  }
+  app.innerHTML = mock + h;
+}
+
+app.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-act]');
+  if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'pick') {
+    me = b.dataset.id; pin = ''; firstPin = ''; msg = '';
+    pinMode = students[me].pinHash ? 'enter' : 'set1'; screen = 'pin';
+  } else if (act === 'back') { me = null; screen = 'names'; }
+  else if (act === 'del') { pin = pin.slice(0, -1); }
+  else if (act === 'key') {
+    if (pin.length >= 4) return;
+    pin += b.dataset.n; msg = '';
+    if (pin.length === 4) { render(); await pinDone(); }
+  } else if (act === 'hair') { draft.hair = b.dataset.c; }
+  else if (act === 'style') { draft.style = Number(b.dataset.i); }
+  else if (act === 'saveAvatar') {
+    await store.set(BASE + '/students/' + me + '/avatar', draft);
+    students[me].avatar = draft; screen = 'lobby';
+  } else if (act === 'editAvatar') { openAvatar(); }
+  else if (act === 'logout') {
+    local('sw_sid', null);
+    await store.remove(BASE + '/presence/' + me);
+    if (MOCK) { me = null; screen = 'names'; } else { location.reload(); return; }
+  }
+  render();
+});
+
+async function pinDone() {
+  const entered = pin; pin = '';
+  if (pinMode === 'set1') { firstPin = entered; pinMode = 'set2'; return; }
+  if (pinMode === 'set2') {
+    if (entered !== firstPin) { msg = '두 번이 서로 달라요. 다시 정해 볼까요?'; pinMode = 'set1'; return; }
+    const hsh = await hashPin(me, entered);
+    await store.set(BASE + '/students/' + me + '/pinHash', hsh);
+    students[me].pinHash = hsh; enter(me); return;
+  }
+  const ok = MOCK ? true : (await hashPin(me, entered)) === students[me].pinHash;
+  if (ok) enter(me); else msg = '숫자가 달라요. 다시 눌러 볼까요?';
+}
+</script>
+</body>
+</html>
