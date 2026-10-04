@@ -168,8 +168,9 @@ function render() {
 app.addEventListener('click', async e => {
   const b = e.target.closest('button[data-act]');
   if (!b) return;
-  Sound.tap();
   const act = b.dataset.act;
+  // 시작·다음 문제·카운트다운은 곧바로 자기 소리(띠동, 띠)가 나므로 버튼 소리를 겹치지 않습니다
+  if (['start', 'next', 'count'].indexOf(act) < 0) Sound.tap();
   if (act === 'start') {
     await store.set(BASE + '/live', { sessionId: store.newId(), setId: b.dataset.set, q: 0, phase: 'question', startedAt: store.now() });
   } else if (act === 'lesson') {
