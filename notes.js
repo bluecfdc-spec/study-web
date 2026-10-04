@@ -1,4 +1,4 @@
-// 학생 화면 덧붙임: 미션 도장판(Stamps), 대기실 버튼들, 수업 문제 다시 풀기(Notes)
+// 학생 화면 덧붙임: 미션 도장판(Stamps)과 오답노트(Notes)
 document.head.insertAdjacentHTML('beforeend', '<style>' +
   '.st-board{background:#fff;border-radius:26px;padding:14px 12px}' +
   '.st-title{display:flex;justify-content:space-between;font-size:16px;color:var(--sub);padding:0 6px 8px}' +
@@ -7,11 +7,15 @@ document.head.insertAdjacentHTML('beforeend', '<style>' +
   '.st-cell.done{background:var(--pink)}.st-cell.now{background:var(--yellow);box-shadow:inset 0 0 0 3px var(--ink);color:var(--ink)}' +
   '.st-cell svg{width:78%;height:auto}.st-num{font-size:19px}' +
   '.n-btn{background:var(--pink);border-radius:26px;width:100%;display:flex;flex-direction:column;align-items:center;gap:2px}' +
-  '.d-card,.n-btn{min-height:86px;justify-content:flex-start;padding:14px 18px;font-size:22px}.d-card small,.n-btn small{font-size:14px;color:var(--sub)}' +
-  '.n-btn.vocab{background:var(--mint)}.n-btn.rev{background:var(--blue)}' +
-  '.lb-friends{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 6px;background:#fff;border-radius:22px;padding:10px 8px}' +
-  '.lb-f{display:flex;align-items:center;gap:6px;font-size:14px;min-width:0}.lb-f svg{flex:none;width:38px;height:38px}.lb-f>div{min-width:0}' +
-  '.lb-f>div>div:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lb-f.off{opacity:.45}.lb-s{font-size:11px;line-height:1.25;color:var(--ok)}.lb-f.off .lb-s{color:var(--sub)}' +
+  '.lb-card{border-radius:26px;width:100%;display:flex;align-items:center}.lb-card.c-mint{background:var(--mint)}.lb-card.c-pink{background:var(--pink)}.lb-card.c-blue{background:var(--blue)}' +
+  '.d-card,.n-btn,.lb-card{min-height:88px;justify-content:center;padding:12px 18px;font-size:23px}.d-card small,.n-btn small,.lb-card small{font-size:15px;color:var(--sub)}' +
+  // 친구 줄: 한 칸에 얼굴·이름·상태를 세로로. 친구가 많아지면 다음 줄로 넘어가고 글씨는 가로로만 씁니다
+  '.lb-friends{display:grid;grid-template-columns:repeat(auto-fit,minmax(60px,1fr));gap:8px 4px;background:#fff;border-radius:22px;padding:10px 8px}' +
+  '.lb-f{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;text-align:center;border-radius:14px;padding:4px 2px}.lb-f.me{background:#FFF4EE}' +
+  '.lb-av{position:relative;line-height:0}.lb-av i{position:absolute;right:-1px;bottom:1px;width:12px;height:12px;border-radius:50%;background:#C9BCC2;border:2px solid #fff}.lb-f.on .lb-av i{background:#34A777}' +
+  '.lb-f.off svg{opacity:.45}.lb-n{font-size:13px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+  '.lb-s{font-size:11px;line-height:1.25;white-space:nowrap;color:var(--sub)}.lb-f.on .lb-s{color:var(--ok)}' +
+  '.lb-m{font-size:11px;line-height:1.25;white-space:nowrap;color:#9C2748;font-weight:700;min-height:14px}' +
   '.n-item{background:#fff;border-radius:24px;padding:16px 18px;font-size:19px;text-align:left;width:100%;display:flex;flex-direction:column;gap:4px}' +
   '.n-item small{font-size:15px;color:var(--sub)}.n-item:disabled{opacity:.6;cursor:default}' +
   '.choice.right{border-color:var(--ink)}.choice.miss{background:#FBEDE8;text-decoration:line-through}.choice.fade{opacity:.4}' +
@@ -51,22 +55,24 @@ const Stamps = (function () {
   };
 })();
 
-// ----- 오답노트: 선생님과 푼 퀴즈마다, 내가 틀린 문제를 계속 다시 풀 수 있습니다 (지워지지 않음) -----
+// ----- 수업 중 문제 다시 풀기: 선생님과 푼 퀴즈를 '오답노트(틀린 것만)' 또는 '전부 다시' 로 풉니다 (지워지지 않음) -----
+// 영어 숙제에서 틀린 단어는 여기가 아니라 단어장 · 틀린 단어 복습하기로 갑니다
 const Notes = (function () {
-  let store = null, sessions = {}, daily = {}, run = null;   // run: 지금 다시 푸는 중인 묶음
+  let store = null, sessions = {}, daily = {}, run = null, mode = '';   // mode: '' 고르기, 'wrong' 오답노트, 'all' 전부 다시
 
   function mine(sid) {
     return Object.keys(sessions).map(id => {
       const rec = sessions[id], set = SETS[rec.setId];
       if (!set) return null;
       const reached = Math.min(rec.q == null ? set.items.length - 1 : rec.q, set.items.length - 1);
-      let joined = false; const wrong = [];
+      let joined = false; const wrong = [], every = [];
       for (let i = 0; i <= reached; i++) {
         const a = answerOf(rec, i, sid);
         if (a != null) joined = true;
         if (a !== set.items[i].a) wrong.push(i);
+        every.push(i);
       }
-      return joined ? { id: id, rec: rec, set: set, wrong: wrong, at: rec.startedAt || 0 } : null;
+      return joined ? { id: id, rec: rec, set: set, wrong: wrong, every: every, at: rec.startedAt || 0 } : null;
     }).filter(Boolean).sort((a, b) => b.at - a.at);
   }
   function dayText(ms) { const d = new Date(ms + 9 * 3600000); return (d.getUTCMonth() + 1) + '월 ' + d.getUTCDate() + '일'; }
@@ -78,48 +84,58 @@ const Notes = (function () {
       store.on(BASE + '/daily', v => { daily = v || {}; onChange(); });
     },
     stamps: function (sid) { return Stamps.html(sid, daily); },
-    // 대기실 버튼 세 개: 영어 단어장, 틀린 단어 복습, 수업 문제 다시 풀기 (그림은 여기서 직접 넣습니다)
-    lobbyButton: function (sid) {
-      const eng = Daily.missed(sid).length, cls = mine(sid).reduce((k, s) => k + s.wrong.length, 0);
-      const btn = (kind, act, pic, title, sub) => '<button class="n-btn art-on ' + kind + '" data-act="' + act + '"><img class="art" src="assets/' + pic + '.webp" alt="" draggable="false">' +
-        '<span class="btn-t">' + title + '<small>' + sub + '</small></span></button>';
-      return btn('vocab', 'd-vocab', 'cream_book', '영어 단어장', eng ? '내가 틀린 낱말 ' + eng + '개 한눈에 보기' : '틀린 낱말이 생기면 여기에 모여요') +
-        btn('rev', 'd-review', 'obj_pencil', '틀린 영어 단어 복습', eng ? eng + '개 다시 풀기' : '아직 복습할 낱말이 없어요') +
-        btn('', 'n-list', 'icon_korean', '수업 문제 다시 풀기', cls ? '수업에서 틀린 문제 ' + cls + '개' : '수업에서 푼 문제가 여기에 모여요');
+    // 대기실 배너: 미션 아래로 단어장 → 틀린 단어 복습하기 → 수업 중 문제 다시 풀기
+    lobbyButtons: function (sid) {
+      const w = Daily.words(sid).length, n = mine(sid).reduce((k, s) => k + s.wrong.length, 0), cls = mine(sid).length;
+      return '<button class="lb-card c-mint" data-art="cream_book" data-act="d-words">단어장<small>' + (w ? '틀린 단어 ' + w + '개 한눈에 보기' : '틀린 단어가 생기면 여기에 모여요') + '</small></button>' +
+        '<button class="lb-card c-pink" data-art="obj_pencil" data-act="d-review">틀린 영어 단어 복습하기<small>' + (w ? '문제로 다시 풀기 · ' + Daily.missed(sid).length + '문제' : '아직 복습할 단어가 없어요') + '</small></button>' +
+        '<button class="lb-card c-blue" data-art="obj_school" data-act="n-home">수업 중 문제 다시 풀기<small>' + (cls ? '오답노트 ' + n + '개 · 수업 ' + cls + '번' : '수업에서 푼 문제가 여기에 모여요') + '</small></button>';
     },
     html: function (sid) {
-      if (!run) {
-        const list = mine(sid);
-        return '<h1>수업 문제 다시 풀기</h1><p class="sub">선생님과 푼 퀴즈에서 틀린 문제예요</p>' +
-          (list.length ? list.map(s => '<button class="n-item" data-act="n-open" data-id="' + esc(s.id) + '"' + (s.wrong.length ? '' : ' disabled') + '>' +
-            esc(s.set.subject) + ' · ' + esc(s.set.unit) + '<small>' + dayText(s.at) + ' · ' + (s.wrong.length ? '틀린 문제 ' + s.wrong.length + '개' : '다 맞혔어요!') + '</small></button>').join('')
-            : '<div class="card"><p class="sub">아직 선생님과 푼 퀴즈가 없어요.</p></div>') +
+      if (!run && !mode) {
+        const list = mine(sid), n = list.reduce((k, s) => k + s.wrong.length, 0), all = list.reduce((k, s) => k + s.every.length, 0);
+        return '<h1>수업 중 문제 다시 풀기</h1><p class="sub">어떻게 풀어 볼까요?</p>' +
+          '<button class="n-item" data-act="n-mode" data-m="wrong" style="background:var(--pink)">오답노트<small>' + (n ? '내가 틀린 문제만 · ' + n + '개' : '틀린 문제가 생기면 여기에 모여요') + '</small></button>' +
+          '<button class="n-item" data-act="n-mode" data-m="all" style="background:var(--blue)">수업 문제 다시 풀기<small>' + (all ? '수업에서 푼 문제 전부 · ' + all + '개' : '수업에서 문제를 풀면 여기에 모여요') + '</small></button>' +
           '<button class="big" data-act="n-exit" style="margin-top:auto">대기실로</button>';
       }
-      const set = run.set, total = run.list.length;
+      if (!run) {
+        const list = mine(sid), w = mode === 'wrong';
+        return '<h1>' + (w ? '오답노트' : '수업 문제 다시 풀기') + '</h1><p class="sub">' + (w ? '틀린 문제는 몇 번이든 다시 풀 수 있어요' : '수업에서 푼 문제를 처음부터 다시 풀어요') + '</p>' +
+          (list.length ? list.map(s => { const k = (w ? s.wrong : s.every).length; return '<button class="n-item" data-act="n-open" data-id="' + esc(s.id) + '"' + (k ? '' : ' disabled') + '>' +
+            esc(s.set.subject) + ' · ' + esc(s.set.unit) + '<small>' + dayText(s.at) + ' · ' + (w ? (k ? '틀린 문제 ' + k + '개' : '다 맞혔어요!') : '문제 ' + k + '개') + '</small></button>'; }).join('')
+            : '<div class="card"><p class="sub">아직 수업에서 푼 문제가 없어요.</p></div>') +
+          '<button class="big" data-act="n-home" style="margin-top:auto">뒤로</button><button class="ghost" data-act="n-exit">대기실로</button>';
+      }
+      const set = run.set, total = run.list.length, label = run.mode === 'wrong' ? '오답노트' : '다시 풀기';
       if (run.i >= total) {
         return '<h1>한 바퀴 끝!</h1><div class="card"><p class="sub">이번에 맞힌 문제</p><p class="bignum">' + run.right + ' / ' + total + '</p></div>' +
-          '<p class="sub">이 문제들은 여기에 계속 남아 있어요</p>' +
+          '<p class="sub">이 문제들은 계속 남아 있어서 또 풀 수 있어요</p>' +
           '<button class="big" data-act="n-again" style="margin-top:auto">한 번 더 풀기</button><button class="ghost" data-act="n-list">목록으로</button>';
       }
       const it = set.items[run.list[run.i]], ch = choicesOf(set, it), done = run.picked != null;
-      return '<div class="row" style="align-items:center"><div class="chip">다시 풀기 · ' + esc(set.unit) + '</div><div class="sub">' + (run.i + 1) + ' / ' + total + '</div></div>' +
+      return '<div class="row" style="align-items:center"><div class="chip">' + label + ' · ' + esc(set.unit) + '</div><div class="sub">' + (run.i + 1) + ' / ' + total + '</div></div>' +
         '<div class="card"><p class="qtext">' + markQ(it.q) + '</p><p class="sub" style="margin-top:10px">' + esc(it.ask || set.ask) + '</p></div>' +
         '<div class="choices">' + ch.map((c, i) => '<button class="choice' + (done ? (i === it.a ? ' right' : (i === run.picked ? ' miss' : ' fade')) : '') + '" data-act="n-pick" data-i="' + i + '"' + (done ? ' disabled' : '') + '>' + esc(c) + '</button>').join('') + '</div>' +
         (done ? '<p class="why">' + (run.picked === it.a ? '정답이에요! ' : '') + esc(it.why) + '</p><button class="big" data-act="n-next" style="margin-top:auto">다음</button>'
           : '<p class="sub">하나를 골라 눌러요</p><button class="ghost" data-act="n-list" style="margin-top:auto">목록으로</button>');
     },
     click: async function (act, b, sid) {
-      if (act === 'n-exit') { run = null; return 'lobby'; }
+      if (act === 'n-exit') { run = null; mode = ''; return 'lobby'; }
+      if (act === 'n-home') { run = null; mode = ''; return 'notes'; }
       if (act === 'n-list') { run = null; return 'notes'; }
+      if (act === 'n-mode') { mode = b.dataset.m === 'all' ? 'all' : 'wrong'; logVisit(store, sid, mode === 'all' ? 'replay' : 'wrong'); return 'notes'; }
       if (act === 'n-open') {
-        const s = mine(sid).filter(x => x.id === b.dataset.id)[0];
-        if (s && s.wrong.length) { run = { set: s.set, list: s.wrong.slice(), i: 0, right: 0, picked: null }; Daily.logAct(sid, 'retry'); }
+        const s = mine(sid).filter(x => x.id === b.dataset.id)[0], list = s ? (mode === 'all' ? s.every : s.wrong) : [];
+        if (list.length) run = { set: s.set, list: list.slice(), i: 0, right: 0, picked: null, mode: mode || 'wrong', visit: logVisit(store, sid, mode === 'all' ? 'replayRun' : 'wrongRun', { unit: s.set.unit }) };
       } else if (act === 'n-pick' && run && run.picked == null) {
         run.picked = Number(b.dataset.i);
         if (run.picked === run.set.items[run.list[run.i]].a) { run.right++; Sound.good(); } else Sound.soft();
-      } else if (act === 'n-next' && run) { run.i++; run.picked = null; }
-      else if (act === 'n-again' && run) { run.i = 0; run.right = 0; run.picked = null; }
+      } else if (act === 'n-next' && run) {
+        run.i++; run.picked = null;
+        if (run.i >= run.list.length && run.visit) store.update(run.visit, { right: run.right, total: run.list.length });
+      }
+      else if (act === 'n-again' && run) { run.i = 0; run.right = 0; run.picked = null; run.visit = logVisit(store, sid, run.mode === 'all' ? 'replayRun' : 'wrongRun', { unit: run.set.unit }); }
       return 'notes';
     }
   };

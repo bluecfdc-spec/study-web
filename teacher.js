@@ -1,6 +1,6 @@
 const app = document.getElementById('app');
 const store = makeStore();
-let students = {}, presence = {}, daily = {}, acts = {}, view = 'students', teacherHash = undefined, authed = false, msg = '', confirmDel = null;
+let students = {}, presence = {}, daily = {}, visits = {}, view = 'students', teacherHash = undefined, authed = false, msg = '', confirmDel = null;
 const studentUrl = location.href.replace(/teacher\.html.*$/, '');
 
 function sess(v) { return local('sw_teacher', v); }
@@ -9,49 +9,71 @@ store.on('teacher/pinHash', v => { teacherHash = v || null; if (MOCK || (teacher
 store.on(BASE + '/students', v => { students = v || {}; render(); });
 store.on(BASE + '/presence', v => { presence = v || {}; render(); });
 store.on(BASE + '/daily', v => { daily = v || {}; render(); });
-store.on(BASE + '/acts', v => { acts = v || {}; render(); });
+store.on(BASE + '/visits', v => { visits = v || {}; render(); });
+Daily.init(store, () => render());
 
 function koDate(ms) { return new Date(ms + 9 * 3600000).toISOString().slice(0, 10); }
-function shortDate(d) { const p = d.split('-'); return Number(p[1]) + '/' + Number(p[2]); }
-function koTime(ms) { return new Date(ms + 9 * 3600000).toISOString().slice(11, 16); }
-// 복습 기록: 날짜별로 단어장, 단어 복습, 수업 문제 다시 풀기에 몇 번 들어갔는지
-function actsHTML(id) {
-  const byDay = {}, names = { vocab: '단어장', review: '단어 복습', retry: '수업 문제 다시 풀기' };
-  Object.keys(acts[id] || {}).forEach(k => {
-    const a = acts[id][k], d = koDate(a.t);
-    const day = byDay[d] = byDay[d] || { n: {}, last: 0 };
-    day.n[a.k] = (day.n[a.k] || 0) + 1; if (a.t > day.last) day.last = a.t;
-  });
-  const days = Object.keys(byDay).sort().reverse().slice(0, 7);
-  if (!days.length) return '아직 없음';
-  return days.map(d => shortDate(d) + ' ' + Object.keys(names).filter(k => byDay[d].n[k]).map(k => names[k] + ' ' + byDay[d].n[k] + '회').join(', ') + ' (마지막 ' + koTime(byDay[d].last) + ')').join('<br>');
-}
 
-// 숙제 현황: 학생마다 진도, 오늘 했는지, 연속 일수, 최근 결과, 다시 볼 낱말
-function homeworkHTML(ids) {
-  const today = koDate(store.now());
-  let h = '<h1>숙제 현황</h1><div class="card"><p class="hint">오늘 날짜 ' + today + ' · 영어 미션은 하루에 한 번, 틀린 낱말은 다음 날 다시 나옵니다.</p></div>';
-  h += '<div class="card"><div class="list">' + (ids.length ? ids.map(id => {
-    const s = students[id], courses = daily[id] || {}, keys = Object.keys(courses);
-    const head = '<div class="stu">' + avatarSVG(s.avatar, 52) + '<div class="name">' + esc(s.name) + '</div>';
-    if (!keys.length) return head + '<span class="tag">아직 시작 전</span><div class="words"><div><span class="wl">복습 기록</span><span>' + actsHTML(id) + '</span></div></div></div>';
-    return keys.map(k => {
-      const r = courses[k], done = r.lastDate === today;
-      const missed = Object.assign({}, r.wrong || {}, r.missed || {}), missN = r.missN || {};
-      const words = Object.keys(missed).sort((x, y) => (missN[y] || 1) - (missN[x] || 1)).map(w => '<b>' + esc(missed[w]) + '</b> ' + (missN[w] || 1) + '번');
-      const logs = Object.keys(r.log || {}).sort().map(d => shortDate(d) + ' <b>' + r.log[d].right + '/' + r.log[d].total + '</b>');
-      return head + '<span class="tag' + (done ? ' on' : '') + '">' + (done ? '오늘 완료' : '오늘 아직') + '</span>' +
-        '<span class="tag">' + esc(r.title || k) + ' ' + Math.min(r.day || 0, r.days || 0) + ' / ' + (r.days || '?') + '일</span>' +
-        '<span class="tag">연속 ' + (r.streak || 0) + '일</span>' +
-        '<button class="plain" data-act="hwreset" data-id="' + esc(id) + '">' + (confirmDel === 'hw' + id ? '정말 처음부터 다시?' : '기록 지우기') + '</button>' +
-        '<div class="words"><div><span class="wl">날짜별 미션</span><span>' + (logs.length ? logs.join(' · ') : '아직 없음') + '</span></div>' +
-        '<div><span class="wl">틀린 낱말</span><span>' + (words.length ? words.join(', ') : '없음') + '</span></div>' +
-        '<div><span class="wl">복습 기록</span><span>' + actsHTML(id) + '</span></div></div></div>';
-    }).join('');
-  }).join('') : '<p class="hint">아직 등록된 학생이 없습니다.</p>') + '</div></div>';
+// 숙제 현황: 학생마다 진도 · 회차별 결과(누적) · 꼭 외워야 할 단어 · 복습하러 들어온 기록
+const VISIT = { words: '단어장', review: '틀린 단어 복습', wrong: '오답노트', replay: '수업 문제 다시 풀기' };
+function koTime(ms) { const d = new Date(ms + 9 * 3600000), z = n => String(n).padStart(2, '0'); return (d.getUTCMonth() + 1) + '월 ' + d.getUTCDate() + '일 ' + z(d.getUTCHours()) + ':' + z(d.getUTCMinutes()); }
+function visitsHTML(id) {
+  const list = Object.keys(visits[id] || {}).map(k => visits[id][k]).filter(v => v && v.at).sort((x, y) => y.at - x.at);
+  const kindOf = v => v.k === 'wrongRun' ? 'wrong' : (v.k === 'replayRun' ? 'replay' : v.k);
+  // 들어간 횟수: 단어장·복습은 열 때마다, 오답노트·다시 풀기는 메뉴에 들어갈 때마다 1번
+  const opens = list.filter(v => VISIT[v.k]);
+  let h = '<h3>복습하러 들어온 기록</h3><div class="hw-counts">' + Object.keys(VISIT).map(k => {
+    const mineK = opens.filter(v => v.k === k);
+    return '<div class="hw-count"><b>' + mineK.length + '번</b>' + VISIT[k] + '<small>' + (mineK.length ? '최근 ' + koTime(mineK[0].at) : '아직 없음') + '</small></div>';
+  }).join('') + '</div>';
+  if (list.length) h += '<ul class="hw-log">' + list.slice(0, 6).map(v =>
+    '<li><span>' + koTime(v.at) + '</span>' + esc(VISIT[kindOf(v)] || v.k) + (v.unit ? ' · ' + esc(v.unit) + ' 풀기' : '') + (v.total ? ' · ' + v.right + ' / ' + v.total + ' 맞힘' : '') + '</li>').join('') +
+    '</ul>' + (list.length > 6 ? '<p class="hint" style="font-size:13px">최근 6개만 보여 줍니다 (전체 ' + list.length + '개)</p>' : '');
   return h;
 }
-document.head.insertAdjacentHTML('beforeend', '<style>button.nav-item{background:transparent;text-align:left;width:100%;font-size:16px;min-height:0}button.nav-item.on{background:var(--mint)}.words{flex:1 1 100%;font-size:15px;color:var(--sub);padding-left:66px;display:flex;flex-direction:column;gap:6px;line-height:1.6}.words b{color:var(--ink)}.words>div{display:flex;gap:10px}.wl{flex:none;width:84px;color:var(--ink);font-weight:700}</style>');
+function homeworkHTML(ids) {
+  const today = koDate(store.now());
+  let h = '<h1>숙제 현황</h1><div class="card"><p class="hint">오늘 날짜 ' + today + ' · 영어 미션은 하루에 한 번, 틀린 단어는 다음 날 다시 나옵니다.</p></div>';
+  if (!ids.length) return h + '<div class="card"><p class="hint">아직 등록된 학생이 없습니다.</p></div>';
+  // 한눈에 보기: 누가 오늘 했는지
+  h += '<div class="card"><div class="hw-sum">' + ids.map(id => {
+    const r = (daily[id] || {})[DAILY.id] || {}, done = r.lastDate === today;
+    return '<a href="#hw-' + esc(id) + '" class="hw-pill' + (done ? ' on' : '') + '">' + esc(students[id].name) + ' · ' + (done ? '오늘 완료' : '오늘 아직') + ' · ' + Math.min(r.day || 0, DAILY.days.length) + '/' + DAILY.days.length + '</a>';
+  }).join('') + '</div></div>';
+  h += ids.map(id => {
+    const s = students[id], r = (daily[id] || {})[DAILY.id];
+    let c = '<div class="card hw" id="hw-' + esc(id) + '"><div class="stu">' + avatarSVG(s.avatar, 52) + '<div class="name">' + esc(s.name) + '</div>';
+    if (!r) return c + '<span class="tag">숙제 아직 시작 전</span></div>' + visitsHTML(id) + '</div>';
+    const done = r.lastDate === today;
+    c += '<span class="tag' + (done ? ' on' : '') + '">' + (done ? '오늘 완료' : '오늘 아직') + '</span>' +
+      '<span class="tag">' + esc(r.title || DAILY.title) + ' ' + Math.min(r.day || 0, r.days || 0) + ' / ' + (r.days || '?') + '일</span>' +
+      '<span class="tag">연속 ' + (r.streak || 0) + '일</span></div>';
+    // 회차별 결과
+    const dates = Object.keys(r.log || {}).sort();
+    c += '<h3>숙제 회차별 결과</h3>' + (dates.length ? '<div class="hw-scroll"><table class="hw-t"><tr><th>회차</th><th>날짜</th><th>맞힌 수</th><th>그날 틀린 단어</th></tr>' + dates.map((d, i) => {
+      const g = r.log[d], w = g.words ? Object.keys(g.words).map(k => g.words[k]) : null;
+      return '<tr><td>' + (i + 1) + '번째' + (g.day ? '<small> (' + g.day + '일째 본문)</small>' : (g.day === 0 ? '<small> (복습)</small>' : '')) + '</td><td>' + esc(d.slice(5).replace('-', '/')) + '</td><td>' + g.right + ' / ' + g.total + '</td><td>' +
+        (w ? '<b>' + w.map(esc).join('</b>, <b>') + '</b>' : (g.right === g.total ? '없음 (다 맞힘)' : '<span class="hint" style="font-size:13px">' + (g.total - g.right) + '개 틀림 · 단어 기록은 이번 업데이트 뒤부터 남습니다</span>')) + '</td></tr>';
+    }).join('') + '</table></div>' : '<p class="hint">아직 끝낸 숙제가 없습니다.</p>');
+    // 꼭 외워야 할 단어
+    const ws = Daily.words(id);
+    c += '<h3>꼭 외워야 할 단어 <small>지금까지 틀린 단어 전부 · 많이 틀린 순</small></h3>' + (ws.length ? '<div class="hw-words">' + ws.map(o =>
+      '<span class="hw-w' + (o.still ? ' still' : '') + '"><b>' + esc(o.w) + '</b> ' + esc(o.ko) + (o.n > 1 ? ' <i>' + o.n + '번</i>' : '') + '</span>').join('') + '</div>' +
+      '<p class="hint" style="font-size:13px">분홍색 = 마지막 숙제에서도 틀려서 다음 숙제에 다시 나오는 단어</p>' : '<p class="hint">틀린 단어 없음</p>');
+    c += visitsHTML(id);
+    c += '<div style="margin-top:14px"><button class="plain" data-act="hwreset" data-id="' + esc(id) + '">' + (confirmDel === 'hw' + id ? '정말 처음부터 다시? (숙제·접속 기록 모두 삭제)' : '기록 지우기') + '</button></div></div>';
+    return c;
+  }).join('');
+  return h;
+}
+document.head.insertAdjacentHTML('beforeend', '<style>button.nav-item{background:transparent;text-align:left;width:100%;font-size:16px;min-height:0}button.nav-item.on{background:var(--mint)}' +
+  '.hw h3{font-size:15px;margin:18px 0 8px;color:var(--ink)}.hw h3 small{font-weight:400;color:var(--sub);font-size:13px;margin-left:6px}' +
+  '.hw-sum{display:flex;flex-wrap:wrap;gap:8px}.hw-pill{padding:8px 14px;border-radius:999px;background:#FBEDE8;color:var(--sub);text-decoration:none;font-size:15px}.hw-pill.on{background:var(--mint);color:var(--ink);font-weight:700}' +
+  '.hw-scroll{overflow-x:auto}.hw-t{border-collapse:collapse;width:100%;font-size:15px}.hw-t th{text-align:left;font-weight:500;color:var(--sub);font-size:13px;padding:6px 10px 6px 0;white-space:nowrap}' +
+  '.hw-t td{padding:8px 10px 8px 0;border-top:1px solid var(--line);vertical-align:top}.hw-t td:nth-child(-n+3){white-space:nowrap}.hw-t small{color:var(--sub)}' +
+  '.hw-words{display:flex;flex-wrap:wrap;gap:8px}.hw-w{background:#FBEDE8;border-radius:12px;padding:6px 12px;font-size:15px;color:var(--sub)}.hw-w b{color:var(--ink)}.hw-w.still{background:var(--pink)}.hw-w i{font-style:normal;font-weight:700;color:#9C2748}' +
+  '.hw-counts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}.hw-count{background:#FBEDE8;border-radius:14px;padding:10px 12px;font-size:14px;color:var(--sub);display:flex;flex-direction:column;gap:2px}.hw-count b{font-size:20px;color:var(--ink)}.hw-count small{font-size:12px}' +
+  '.hw-log{list-style:none;margin:10px 0 0;padding:0;font-size:14px}.hw-log li{padding:5px 0;border-top:1px solid var(--line)}.hw-log span{display:inline-block;min-width:118px;color:var(--sub)}</style>');
 
 function render() {
   if (teacherHash === undefined) return;
@@ -122,7 +144,7 @@ app.addEventListener('click', async e => {
   if (b.dataset.act === 'view') { view = b.dataset.v; render(); return; }
   if (b.dataset.act === 'hwreset') {   // 숙제 기록을 지워 1일째부터 다시 (테스트용)
     if (confirmDel !== 'hw' + id) { confirmDel = 'hw' + id; render(); return; }
-    confirmDel = null; await store.remove(BASE + '/daily/' + id); await store.remove(BASE + '/acts/' + id); return;
+    confirmDel = null; await store.remove(BASE + '/daily/' + id); await store.remove(BASE + '/visits/' + id); return;
   }
   if (b.dataset.act === 'reset') { await store.remove(BASE + '/students/' + id + '/pinHash'); }
   else if (b.dataset.act === 'del') {
