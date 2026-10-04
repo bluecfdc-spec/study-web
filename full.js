@@ -1,6 +1,8 @@
 // 전체 화면 버튼: 음악 버튼 왼쪽의 작은 아이콘. 누르면 주소창 없이 화면을 가득 채웁니다.
 // 기기가 전체 화면을 지원하지 않으면(아이폰 등) 버튼이 아예 나오지 않습니다.
 (function () {
+  // 오른쪽 위 작은 버튼들(전체 화면·음악)이 '문제 1 / 10' 같은 글씨를 가리지 않게 자리를 비워 둡니다
+  document.head.insertAdjacentHTML('beforeend', '<style>#app .top{padding-right:84px}</style>');
   const el = document.documentElement;
   const can = document.fullscreenEnabled || document.webkitFullscreenEnabled;
   if (!can || !(el.requestFullscreen || el.webkitRequestFullscreen)) return;
