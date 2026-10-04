@@ -94,11 +94,29 @@ const Daily = (function () {
     '.d-tag{align-self:flex-start;background:#FBEDE8;border-radius:999px;padding:6px 14px;font-size:15px}' +
     '.w-list{background:#fff;border-radius:24px;padding:6px 16px;max-height:52vh;overflow-y:auto;-webkit-overflow-scrolling:touch}' +
     '.w-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid #F1E2DE;font-size:17px}.w-row:first-child{border-top:none}' +
-    '.w-row b{flex:0 0 46%;font-size:19px;font-weight:700;overflow-wrap:anywhere}.w-row span{flex:1;min-width:0;color:var(--sub)}' +
+    '.w-say{flex:none;width:34px;height:34px;padding:0;border-radius:50%;background:#FBEDE8;color:#B4688A;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}.w-say svg{width:18px;height:18px}.w-say:active{background:var(--yellow)}' +
+    '.d-tags{display:flex;align-items:center;gap:8px;flex-wrap:wrap}' +
+    '.w-row b{flex:0 0 40%;font-size:19px;font-weight:700;overflow-wrap:anywhere}.w-row span{flex:1;min-width:0;color:var(--sub)}' +
     '.w-row i{flex:none;font-style:normal;font-size:13px;background:var(--pink);border-radius:999px;padding:3px 9px}' +
     '.w-list.hide-ko span{visibility:hidden}.w-list.hide-en b{visibility:hidden}' +
     '.w-tog{display:grid;grid-template-columns:1fr 1fr;gap:10px}.w-tog button{min-height:56px;border-radius:20px;background:#fff;font-size:17px;font-weight:700;border:3px solid transparent}.w-tog button.on{background:var(--yellow);border-color:var(--ink)}' +
     '.d-list{font-size:17px;line-height:1.9;text-align:center}.d-list b{font-family:system-ui,sans-serif}</style>');
+
+  // 발음 듣기: 기기에 들어 있는 영어 음성으로 읽어 줍니다 (파일 없이 브라우저 기능 사용)
+  const SPK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 9a4.5 4.5 0 010 6"/></svg>';
+  function sayBtn(text) { return '<button class="w-say" type="button" data-say="' + esc(text) + '" aria-label="발음 듣기">' + SPK + '</button>'; }
+  function say(text) {
+    try {
+      if (!window.speechSynthesis) return;
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US'; u.rate = 0.85;
+      const v = speechSynthesis.getVoices().filter(x => /^en[-_]US/i.test(x.lang))[0];
+      if (v) u.voice = v;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+    } catch (e) { }
+  }
+  document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-say]'); if (b) say(b.dataset.say); });
+  function plain(sen) { return sen.parts.map(p => typeof p === 'string' ? p : sen.blanks[p.b].w).join(''); }
 
   function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function dateOf(ms) { return new Date(ms + 9 * 3600000).toISOString().slice(0, 10); }   // 한국 날짜
@@ -199,7 +217,7 @@ const Daily = (function () {
       if (view === 'words') {
         const ws = wordList(sid);
         return '<h1>단어장</h1><p class="sub">' + (ws.length ? '숙제에서 틀린 단어 ' + ws.length + '개 · 많이 틀린 순' : '아직 틀린 단어가 없어요') + '</p>' +
-          (ws.length ? '<div class="w-list' + (hide ? ' hide-' + hide : '') + '">' + ws.map(o => '<div class="w-row"><b class="d-en" style="line-height:1.3">' + esc(o.w) + '</b><span>' + esc(o.ko) + '</span>' + (o.n > 1 ? '<i>' + o.n + '번</i>' : '') + '</div>').join('') + '</div>' +
+          (ws.length ? '<div class="w-list' + (hide ? ' hide-' + hide : '') + '">' + ws.map(o => '<div class="w-row">' + sayBtn(o.w) + '<b class="d-en" style="line-height:1.3">' + esc(o.w) + '</b><span>' + esc(o.ko) + '</span>' + (o.n > 1 ? '<i>' + o.n + '번</i>' : '') + '</div>').join('') + '</div>' +
             '<div class="w-tog"><button class="' + (hide === 'ko' ? 'on' : '') + '" data-act="d-hide" data-h="ko">' + (hide === 'ko' ? '뜻 다시 보기' : '뜻 가리고 보기') + '</button>' +
             '<button class="' + (hide === 'en' ? 'on' : '') + '" data-act="d-hide" data-h="en">' + (hide === 'en' ? '영어 다시 보기' : '영어 가리고 보기') + '</button></div><span style="margin-top:auto"></span>'
             : '<div class="card"><p class="sub">영어 미션에서 틀린 단어가 생기면 여기에 모여요.</p></div><span style="margin-top:auto"></span>') +
@@ -230,11 +248,11 @@ const Daily = (function () {
       const prog = '<div class="d-prog"><div><span>' + esc(C.title) + '</span><span>문제 ' + Math.min(S.done + (cur.kind === 'q' ? 1 : 0), S.total) + ' / ' + S.total + '</span></div><div class="d-bar"><i style="width:' + Math.round(S.done / S.total * 100) + '%"></i></div></div>';
       const who = cur.s.who ? '<div class="d-tag">' + esc(cur.s.who) + '</div>' : '';
       if (cur.kind === 'card') {
-        return prog + '<div class="d-tag">새 문장</div>' + who + '<div class="card"><p class="d-en">' + sentenceHTML(cur.s, 'show') + '</p><p class="d-ko">' + esc(cur.s.ko) + '</p></div>' +
+        return prog + '<div class="d-tags"><div class="d-tag">새 문장</div>' + sayBtn(plain(cur.s)) + '</div>' + who + '<div class="card"><p class="d-en">' + sentenceHTML(cur.s, 'show') + '</p><p class="d-ko">' + esc(cur.s.ko) + '</p></div>' +
           '<p class="sub">색칠한 단어를 잘 봐 두세요</p><button class="big" data-act="d-next" style="margin-top:auto">봤어요! 문제 풀기</button>';
       }
       const bl = cur.s.blanks[cur.bi], answered = S.picked != null, ok = S.picked === bl.w;
-      return prog + '<div class="d-tag">' + (S.practice ? '틀린 단어 복습' : (cur.review ? '다시 풀기' : '빈칸 채우기')) + '</div>' + who +
+      return prog + '<div class="d-tags"><div class="d-tag">' + (S.practice ? '틀린 단어 복습' : (cur.review ? '다시 풀기' : '빈칸 채우기')) + '</div>' + (answered ? sayBtn(plain(cur.s)) : '') + '</div>' + who +
         '<div class="card"><p class="d-en">' + sentenceHTML(cur.s, 'ask', cur.bi) + '</p><p class="d-ko">' + esc(cur.s.ko) + '</p></div>' +
         '<div class="d-opts">' + S.opts.map((w, i) => '<button class="d-opt' + (answered ? (w === bl.w ? ' ok' : (w === S.picked ? ' no' : '')) : '') + '" data-act="d-pick" data-i="' + i + '"' + (answered ? ' disabled' : '') + '>' + esc(w) + '</button>').join('') + '</div>' +
         (answered ? '<p class="sub">' + (ok ? '정답이에요!' : (S.practice ? '괜찮아요. 단어장에 남아 있어요' : '괜찮아요. 내일 한 번 더 만나요')) + '</p><button class="big" data-act="d-next" style="margin-top:auto">다음</button>' : '<p class="sub">빈칸에 들어갈 말을 눌러요</p>' + (S.practice ? '<button class="ghost" data-act="d-exit" style="margin-top:auto">그만하기</button>' : ''));
