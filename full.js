@@ -1,12 +1,12 @@
-// 전체 화면 버튼: 음악 버튼 왼쪽의 작은 아이콘. 누르면 주소창 없이 화면을 가득 채웁니다.
+// 전체 화면 버튼: 음악·효과음 버튼 왼쪽의 작은 아이콘. 누르면 주소창 없이 화면을 가득 채웁니다.
 // 기기가 전체 화면을 지원하지 않으면(아이폰 등) 버튼이 아예 나오지 않습니다.
 (function () {
-  // 오른쪽 위 작은 버튼들(전체 화면·음악)이 '문제 1 / 10' 같은 글씨를 가리지 않게 자리를 비워 둡니다
-  document.head.insertAdjacentHTML('beforeend', '<style>#app .top{padding-right:84px}</style>');
+  // 오른쪽 위 작은 버튼들(전체 화면·효과음·음악)이 '문제 1 / 10' 같은 글씨를 가리지 않게 자리를 비워 둡니다
+  document.head.insertAdjacentHTML('beforeend', '<style>#app .top{padding-right:126px}</style>');
   const el = document.documentElement;
   const can = document.fullscreenEnabled || document.webkitFullscreenEnabled;
   if (!can || !(el.requestFullscreen || el.webkitRequestFullscreen)) return;
-  document.head.insertAdjacentHTML('beforeend', '<style>#fullBtn{position:fixed;top:8px;right:50px;z-index:5;width:34px;height:34px;padding:0;border-radius:50%;border:none;background:rgba(255,255,255,.7);color:#B79AA6;display:flex;align-items:center;justify-content:center;cursor:pointer}#fullBtn svg{width:18px;height:18px}</style>');
+  document.head.insertAdjacentHTML('beforeend', '<style>#fullBtn{position:fixed;top:8px;right:92px;z-index:5;width:34px;height:34px;padding:0;border-radius:50%;border:none;background:rgba(255,255,255,.7);color:#B79AA6;display:flex;align-items:center;justify-content:center;cursor:pointer}#fullBtn svg{width:18px;height:18px}</style>');
   const btn = document.createElement('button');
   btn.id = 'fullBtn'; btn.type = 'button';
   document.body.appendChild(btn);

@@ -135,7 +135,7 @@ function correctCount(live, set, sid) {
 
 // ----- 효과음 (파일 없이 브라우저가 직접 만드는 소리) -----
 const Sound = (function () {
-  let ctx = null;
+  let ctx = null, sfxOff = local('sw_sfx') === 'off';   // 효과음 끄기 (배경음악과 따로)
   function ac() {
     try {
       if (!ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ctx = new C(); }
@@ -145,6 +145,7 @@ const Sound = (function () {
   }
   // 소리 장치가 아직 잠들어 있으면(아이폰·아이패드) 깨운 뒤에 소리를 냅니다
   function ready(fn) {
+    if (sfxOff) return;
     const c = ac(); if (!c) return;
     if (c.state === 'running') fn(c); else c.resume().then(() => fn(c)).catch(() => { });
   }
@@ -159,6 +160,8 @@ const Sound = (function () {
   function bell(f, t0, vol) { tone(f, t0, 0.9, vol); tone(f * 2, t0, 0.5, vol * 0.35); tone(f * 3, t0, 0.25, vol * 0.15); }
   ['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => window.addEventListener(ev, () => ac(), { passive: true }));
   return {
+    isOff: () => sfxOff,
+    setOff: v => { sfxOff = !!v; local('sw_sfx', sfxOff ? 'off' : 'on'); },
     // 버튼 소리: 스페이스 서바이버의 메뉴 선택음과 같은 맑은 종소리 두 음 (띠-룽)
     tap: () => ready(c => {
       const t = c.currentTime, f = m => 440 * Math.pow(2, (m - 69) / 12);
@@ -229,7 +232,7 @@ const Sound = (function () {
     '.btn-t{display:flex;flex-direction:column;gap:2px}' +
     '.lz-cat img.art{width:clamp(70px,9vw,120px);height:auto}' +
     '.cheer-img{display:flex;justify-content:center}.cheer-img img{width:150px;height:auto}' +
-    '#bgmBtn{position:fixed;top:8px;right:8px;z-index:5;width:34px;height:34px;padding:0;border-radius:50%;border:none;background:rgba(255,255,255,.7);color:#B79AA6;display:flex;align-items:center;justify-content:center}#bgmBtn[hidden]{display:none}#bgmBtn.off{color:#D3C3C9}#bgmBtn svg{width:18px;height:18px}</style>');
+    '#bgmBtn,#sfxBtn{position:fixed;top:8px;right:8px;z-index:5;width:34px;height:34px;padding:0;border-radius:50%;border:none;background:rgba(255,255,255,.7);color:#B79AA6;display:flex;align-items:center;justify-content:center}#sfxBtn{right:50px}#bgmBtn[hidden]{display:none}#bgmBtn.off,#sfxBtn.off{color:#D3C3C9}#bgmBtn svg,#sfxBtn svg{width:18px;height:18px}</style>');
 
   function wrapText(btn) {   // 버튼 안 글자를 한 덩어리로 묶어 그림 옆에 둡니다
     const box = document.createElement('span'); box.className = 'btn-t';
@@ -265,13 +268,23 @@ const Sound = (function () {
     let audio = null, wanted = false, unlocked = false, off = local('sw_bgm') === 'off';
     const btn = document.createElement('button');
     btn.id = 'bgmBtn'; btn.type = 'button'; btn.hidden = true; document.body.appendChild(btn);
-    const spk = '<path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/>';
+    // 음표 = 배경음악, 스피커 = 버튼 효과음. 따로 켜고 끕니다
     function label() {
       btn.className = off ? 'off' : '';
-      btn.setAttribute('aria-label', off ? '음악 켜기' : '음악 끄기');
-      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">' + spk +
-        (off ? '<path d="M17 9.5l4.5 5M21.5 9.5l-4.5 5"/>' : '<path d="M16.5 9a4.5 4.5 0 010 6M19 6.5a8 8 0 010 11"/>') + '</svg>';
+      btn.setAttribute('aria-label', off ? '배경음악 켜기' : '배경음악 끄기'); btn.title = btn.getAttribute('aria-label');
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5.5l10-2V16"/><circle cx="6.5" cy="18" r="2.5" fill="currentColor"/><circle cx="16.5" cy="16" r="2.5" fill="currentColor"/>' + (off ? '<path d="M3.5 3.5l17 17"/>' : '') + '</svg>';
     }
+    const sfx = document.createElement('button');
+    sfx.id = 'sfxBtn'; sfx.type = 'button'; document.body.appendChild(sfx);
+    function sfxLabel() {
+      const o = Sound.isOff();
+      sfx.className = o ? 'off' : '';
+      sfx.setAttribute('aria-label', o ? '효과음 켜기' : '효과음 끄기'); sfx.title = sfx.getAttribute('aria-label');
+      sfx.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/>' +
+        (o ? '<path d="M17 9.5l4.5 5M21.5 9.5l-4.5 5"/>' : '<path d="M16.5 9a4.5 4.5 0 010 6M19 6.5a8 8 0 010 11"/>') + '</svg>';
+    }
+    sfx.addEventListener('click', () => { Sound.setOff(!Sound.isOff()); sfxLabel(); if (!Sound.isOff()) Sound.tap(); });
+    sfxLabel();
     function sync() {
       btn.hidden = !wanted; label();
       if (!unlocked) return;

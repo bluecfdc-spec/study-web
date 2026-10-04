@@ -33,7 +33,7 @@
       setTimeout(fin, 1500 + text.length * 120);   // 끝났다는 신호가 안 오는 기기를 위한 안전장치
     } catch (e) { fin(); }
   }
-  function play(before, after) {
+  function play(before, after, plain) {   // plain: 삐 소리 없이 이어서 읽기
     const my = ++run;
     try {
       const C = window.AudioContext || window.webkitAudioContext;
@@ -41,6 +41,7 @@
       if (ctx && ctx.state === 'suspended') ctx.resume();
       if (window.speechSynthesis) speechSynthesis.cancel();
     } catch (e) { }
+    if (plain) { speak(before + ' ' + (after || ''), () => { }); return; }
     speak(before, () => { if (my !== run) return; beep(() => { if (my !== run) return; speak(after, () => { }); }); });
   }
 
@@ -55,6 +56,7 @@
     tags.appendChild(b);
   }
   document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-sayq]'); if (b) play(b.dataset.a, b.dataset.b); });
+  window.SayQ = { play: play };   // 수업 화면의 영어 시험에서도 같은 읽기를 씁니다
   new MutationObserver(add).observe(app, { childList: true, subtree: true });
   add();
 })();
