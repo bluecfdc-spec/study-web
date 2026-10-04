@@ -22,6 +22,7 @@ store.on(BASE + '/live', v => {
   }
   lastCue = cue;
 });
+Daily.init(store, () => { if (screen === 'lobby') render(); });
 function sync() { if (me && (screen === 'lobby' || screen === 'quiz')) screen = (live && SETS[live.setId]) ? 'quiz' : 'lobby'; }
 setInterval(() => {
   if (screen !== 'quiz' || !live || live.phase !== 'count') return;
@@ -95,6 +96,8 @@ function render() {
       '<div class="label" style="margin-top:18px">머리 모양</div><div class="styles">' + STYLES.map((s, i) =>
         '<button class="style-btn' + (draft.style === i ? ' on' : '') + '" data-act="style" data-i="' + i + '" aria-pressed="' + (draft.style === i) + '">' + s + '</button>').join('') + '</div></div>' +
       '<button class="big" data-act="saveAvatar">완성!</button>';
+  } else if (screen === 'daily') {
+    h = Daily.html(me);
   } else if (screen === 'quiz') {
     h = quizHTML();
   } else if (screen === 'lobby') {
@@ -102,8 +105,9 @@ function render() {
     h = '<h1>대기실</h1><p class="sub">' + esc(students[me].name) + ', 어서 와요</p>' +
       '<div class="card"><div class="lobby">' + ids.map(id => {
         const on = !!presence[id] || id === me;
-        return '<div class="seat ' + (on ? 'on' : 'off') + '">' + avatarSVG(students[id].avatar, 84) + '<div>' + esc(students[id].name) + (id === me ? ' (나)' : '') + '</div><div class="state">' + (on ? '들어왔어요' : '아직이에요') + '</div></div>';
+        return '<div class="seat ' + (on ? 'on' : 'off') + '">' + avatarSVG(students[id].avatar, 84) + '<div>' + esc(students[id].name) + (id === me ? ' (나)' : '') + '</div><div class="state">' + (Daily.doneToday(id) ? '미션 완료' : (on ? '들어왔어요' : '아직이에요')) + '</div></div>';
       }).join('') + '</div></div>' +
+      Daily.lobbyCard(me) +
       '<div class="wait">선생님이 시작하면<br>여기에 퀴즈가 열려요</div>' +
       '<div class="row" style="margin-top:auto"><button class="ghost" data-act="editAvatar">캐릭터 바꾸기</button><button class="ghost" data-act="logout">나가기</button></div>';
   }
@@ -113,8 +117,13 @@ function render() {
 app.addEventListener('click', async e => {
   const b = e.target.closest('button[data-act]');
   if (!b) return;
-  Sound.tap();
   const act = b.dataset.act;
+  if (act !== 'd-pick') Sound.tap();
+  if (act.indexOf('d-') === 0) {   // 오늘의 영어 미션 버튼
+    screen = await Daily.click(act, b, me);
+    if (screen === 'lobby') sync();
+    render(); return;
+  }
   if (act === 'pick') {
     me = b.dataset.id; pin = ''; firstPin = ''; msg = '';
     pinMode = students[me].pinHash ? 'enter' : 'set1'; screen = 'pin';
