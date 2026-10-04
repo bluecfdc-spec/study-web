@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>수업 화면</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap">
+<style>
+:root{--bg:#FFF4EE;--ink:#4A3B47;--sub:#6B5764;--card:#FFFFFF;--pink:#FFC9D6;--pink2:#F29BB5;--mint:#BFE8D9;--yellow:#FFE39A;--blue:#CFE0FF;--ok:#2E7D5E}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Jua','Apple SD Gothic Neo','Malgun Gothic',sans-serif}
+#app{min-height:100vh;padding:3vh 4vw;display:flex;flex-direction:column;gap:2.4vh}
+h1{margin:0;font-weight:400;font-size:clamp(28px,4.4vw,56px);text-align:center}
+p{margin:0}
+.sub{color:var(--sub);font-size:clamp(16px,2vw,26px);text-align:center}
+button{font-family:inherit;color:var(--ink);cursor:pointer;border:none}
+button:focus-visible,a:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.chip{background:var(--pink);border-radius:999px;padding:8px 20px;font-size:clamp(16px,2vw,26px)}
+.card{background:var(--card);border-radius:32px;padding:3vh 3vw}
+.qtext{font-size:clamp(34px,6.4vw,92px);line-height:1.3;text-align:center}
+mark{background:var(--pink);color:inherit;border-radius:18px;padding:0 .25em}
+.choices{display:flex;gap:1.6vw;flex-wrap:wrap}
+.choice{flex:1 1 160px;border-radius:26px;padding:2.2vh 1vw;text-align:center;font-size:clamp(22px,3.4vw,48px);border:6px solid transparent}
+.choice:nth-child(4n+1){background:var(--pink)}.choice:nth-child(4n+2){background:var(--mint)}.choice:nth-child(4n+3){background:var(--yellow)}.choice:nth-child(4n){background:var(--blue)}
+.choice.right{border-color:var(--ink)}
+.choice.fade{opacity:.35}
+.seats{display:flex;justify-content:center;gap:4vw;flex-wrap:wrap}
+.seat{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:clamp(16px,2vw,26px);text-align:center}
+.seat.off{opacity:.35}
+.state{font-size:clamp(14px,1.6vw,22px);color:var(--sub)}
+.state.good{color:var(--ok)}
+.cd{width:clamp(90px,13vw,170px);height:clamp(90px,13vw,170px);border-radius:50%;background:var(--yellow);border:8px solid #fff;display:flex;align-items:center;justify-content:center;font-size:clamp(46px,8vw,104px);margin:0 auto}
+.why{font-size:clamp(20px,2.8vw,38px);text-align:center;line-height:1.5}
+.bar{margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.go{background:var(--pink2);color:#3A2230;border-radius:22px;min-height:60px;padding:0 30px;font-size:clamp(20px,2.2vw,28px)}
+.quiet{background:transparent;color:var(--sub);text-decoration:underline;font-size:17px;min-height:44px;padding:0 8px;font-family:inherit}
+.sets{display:flex;flex-direction:column;gap:12px;max-width:760px;margin:0 auto;width:100%}
+.set{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;background:var(--card);border-radius:24px;padding:16px 22px;font-size:clamp(18px,2.2vw,26px)}
+.team{background:var(--yellow);border-radius:24px;padding:14px 26px;font-size:clamp(20px,2.6vw,34px);text-align:center;align-self:center}
+</style>
+</head>
+<body>
+<main id="app"><p class="sub">불러오는 중…</p></main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="common.js"></script>
+<script src="questions.js"></script>
+<script>
+const app = document.getElementById('app');
+const store = makeStore();
+const Q = MOCK ? '?mock' : '';
+let students = {}, presence = {}, live = null, authed = null, flipping = false;
+
+store.on('teacher/pinHash', v => { authed = MOCK || (!!v && local('sw_teacher') === v); render(); });
+store.on(BASE + '/students', v => { students = v || {}; render(); });
+store.on(BASE + '/presence', v => { presence = v || {}; render(); });
+store.on(BASE + '/live', v => { live = v; flipping = false; render(); });
+
+setInterval(() => {
+  if (!live || live.phase !== 'count') return;
+  const left = Math.ceil((live.endsAt - store.now()) / 1000);
+  const el = document.getElementById('cd');
+  if (el) el.textContent = left > 0 ? left : '끝';
+  if (left <= 0 && !flipping) { flipping = true; store.update(BASE + '/live', { phase: 'reveal' }); }
+}, 200);
+
+function seats(stateOf) {
+  return '<div class="seats">' + Object.keys(students).map(id => {
+    const on = !!presence[id]; const st = stateOf ? stateOf(id) : null;
+    return '<div class="seat ' + (on ? '' : 'off') + '">' + avatarSVG(students[id].avatar, 96) + '<div>' + esc(students[id].name) + '</div>' +
+      (st ? '<div class="state' + (st.good ? ' good' : '') + '">' + st.text + '</div>' : '') + '</div>';
+  }).join('') + '</div>';
+}
+
+function render() {
+  if (authed === null) return;
+  if (!authed) { app.innerHTML = '<h1>수업 화면</h1><p class="sub">선생님 포털에서 먼저 로그인해 주세요.</p><p class="sub"><a href="teacher.html' + Q + '">선생님 포털로 가기</a></p>'; return; }
+  const set = live && SETS[live.setId];
+  if (!set) {
+    app.innerHTML = '<h1>대기실</h1><p class="sub">친구들이 들어오면 캐릭터가 선명해져요</p>' +
+      seats(id => ({ text: presence[id] ? '들어왔어요' : '아직이에요', good: !!presence[id] })) +
+      '<div class="sets">' + Object.keys(SETS).map(k => '<div class="set"><span>' + esc(SETS[k].subject) + ' · ' + esc(SETS[k].title) + ' (' + SETS[k].items.length + '문제)</span><button class="go" data-act="start" data-set="' + k + '">시작</button></div>').join('') + '</div>' +
+      '<div class="bar"><a class="quiet" href="teacher.html' + Q + '">선생님 포털</a><span></span></div>';
+    return;
+  }
+  const n = set.items.length, qi = live.q, it = set.items[qi], ch = choicesOf(set, it), ids = Object.keys(students);
+  const top = '<div class="top"><div class="chip">' + esc(set.subject) + ' · ' + esc(set.unit) + '</div><div class="sub">문제 ' + (qi + 1) + ' / ' + n + '</div></div>';
+  const stop = '<button class="quiet" data-act="stop">수업 끝내기</button>';
+  if (live.phase === 'end') {
+    const team = ids.reduce((s, id) => s + correctCount(live, set, id), 0);
+    app.innerHTML = '<h1>끝! 모두 수고했어요</h1>' + seats(id => ({ text: n + '문제 중 ' + correctCount(live, set, id) + '개', good: true })) +
+      '<div class="team">우리 팀이 함께 맞힌 문제 ' + team + '개</div>' +
+      '<div class="bar"><span></span><button class="go" data-act="stop">대기실로</button></div>';
+    return;
+  }
+  if (live.phase === 'reveal') {
+    const right = ids.filter(id => answerOf(live, qi, id) === it.a).length;
+    app.innerHTML = top + '<div class="card"><p class="qtext">' + markQ(it.q) + '</p></div>' +
+      '<div class="choices">' + ch.map((c, i) => '<div class="choice ' + (i === it.a ? 'right' : 'fade') + '">' + esc(c) + '</div>').join('') + '</div>' +
+      '<p class="why">' + esc(it.why) + '</p>' +
+      seats(id => { const a = answerOf(live, qi, id); return a === it.a ? { text: '정답!', good: true } : { text: a == null ? '못 골랐어요' : '아쉬워요' }; }) +
+      '<div class="bar">' + stop + '<div class="team" style="margin:0">이번 문제 ' + right + '명 정답</div><button class="go" data-act="next">' + (qi + 1 < n ? '다음 문제' : '결과 보기') + '</button></div>';
+    return;
+  }
+  const counting = live.phase === 'count';
+  app.innerHTML = top + '<div class="card"><p class="qtext">' + markQ(it.q) + '</p><p class="sub" style="margin-top:1.5vh">' + esc(it.ask || set.ask) + '</p></div>' +
+    '<div class="choices">' + ch.map(c => '<div class="choice">' + esc(c) + '</div>').join('') + '</div>' +
+    (counting ? '<div id="cd" class="cd"></div>' : '') +
+    seats(id => answerOf(live, qi, id) != null ? { text: '골랐어요', good: true } : { text: '고민 중…' }) +
+    '<div class="bar">' + stop + (counting ? '<span></span>' : '<button class="go" data-act="count">5초 카운트다운 시작</button>') + '</div>';
+}
+
+app.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-act]');
+  if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'start') {
+    await store.set(BASE + '/live', { sessionId: store.newId(), setId: b.dataset.set, q: 0, phase: 'question', startedAt: store.now() });
+  } else if (act === 'count') {
+    await store.update(BASE + '/live', { phase: 'count', endsAt: store.now() + 5000 });
+  } else if (act === 'next') {
+    const set = SETS[live.setId];
+    if (live.q + 1 < set.items.length) await store.update(BASE + '/live', { q: live.q + 1, phase: 'question', endsAt: null });
+    else {
+      const rec = Object.assign({}, live, { phase: 'end', endedAt: store.now() });
+      await store.set(BASE + '/sessions/' + live.sessionId, rec);   // 학습 기록으로 남김
+      await store.update(BASE + '/live', { phase: 'end' });
+    }
+  } else if (act === 'stop') {
+    await store.remove(BASE + '/live');
+  }
+});
+</script>
+</body>
+</html>

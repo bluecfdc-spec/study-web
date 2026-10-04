@@ -21,6 +21,7 @@ nav{flex:1 1 200px;padding:24px 18px;display:flex;flex-direction:column;gap:8px}
 .brand{font-size:24px;margin-bottom:12px}
 .nav-item{padding:12px 14px;border-radius:12px;color:var(--sub)}
 .nav-item.on{background:var(--mint);color:var(--ink);font-weight:700}
+a.nav-item{text-decoration:none;display:block}
 .nav-item small{display:block;font-size:13px}
 main{flex:999 1 520px;min-width:0;padding:24px 22px 40px;display:flex;flex-direction:column;gap:18px}
 .card{background:var(--card);border-radius:20px;padding:20px}
@@ -53,7 +54,7 @@ const store = makeStore();
 let students = {}, presence = {}, teacherHash = undefined, authed = false, msg = '', confirmDel = null;
 const studentUrl = location.href.replace(/teacher\.html.*$/, '');
 
-function sess(v) { try { if (v === undefined) return sessionStorage.getItem('sw_teacher'); sessionStorage.setItem('sw_teacher', v); } catch (e) { } return null; }
+function sess(v) { return local('sw_teacher', v); }
 
 store.on('teacher/pinHash', v => { teacherHash = v || null; if (MOCK || (teacherHash && sess() === teacherHash)) authed = true; render(); });
 store.on(BASE + '/students', v => { students = v || {}; render(); });
@@ -78,7 +79,7 @@ function render() {
   const nameVal = keepName ? keepName.value : '';
   app.innerHTML = '<div class="wrap"><nav aria-label="메뉴"><div class="brand">선생님 포털</div>' +
     '<div class="nav-item on">학생 관리</div>' +
-    '<div class="nav-item">수업 진행<small>준비 중</small></div>' +
+    '<a class="nav-item" href="stage.html' + (MOCK ? '?mock' : '') + '">수업 진행<small>큰 화면 열기</small></a>' +
     '<div class="nav-item">숙제 현황<small>준비 중</small></div>' +
     '<div class="nav-item">문제 관리<small>준비 중</small></div></nav>' +
     '<main><h1>학생 관리</h1>' +

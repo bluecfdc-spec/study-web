@@ -15,7 +15,7 @@ const MOCK = new URLSearchParams(location.search).has('mock'); // ?mock = 연습
 
 const HAIRS = ['#F29BB5', '#7CC7B0', '#9B8CE0', '#F2B24C', '#6B4A3A', '#2F2A33'];
 const HAIR_NAMES = ['분홍', '민트', '보라', '노랑', '갈색', '검정'];
-const STYLES = ['단발', '긴 머리', '양갈래'];
+const STYLES = ['단발', '긴 곱슬머리', '양갈래', '똥머리'];
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -26,7 +26,9 @@ function avatarSVG(a, size) {
   const h = a.hair || '#D9CFD3';
   const s = a.style || 0;
   let back = '<rect x="7" y="18" width="34" height="18" rx="8" fill="' + h + '"/>';
-  if (s === 1) back = '<rect x="7" y="18" width="34" height="29" rx="9" fill="' + h + '"/>';
+  if (s === 1) back = [[8, 23, 6.5], [6.5, 31, 6.5], [8, 39, 6.5], [13, 44, 4], [40, 23, 6.5], [41.5, 31, 6.5], [40, 39, 6.5], [35, 44, 4]]
+    .map(c => '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '" fill="' + h + '"/>').join('');
+  if (s === 3) back = '<circle cx="24" cy="7" r="6.5" fill="' + h + '"/>';
   if (s === 2) back = '<circle cx="5.5" cy="31" r="6" fill="' + h + '"/><circle cx="42.5" cy="31" r="6" fill="' + h + '"/>';
   return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 48 48" aria-hidden="true">' + back +
     '<circle cx="24" cy="26" r="15" fill="#FFE2CF"/>' +
@@ -52,17 +54,20 @@ function local(key, val) {
 
 // ----- 저장소: 실제(Firebase)와 연습용(메모리) 두 가지가 같은 사용법 -----
 function makeMockStore() {
-  const tree = {
-    classes: { gusan1: {
-      students: {
-        s1: { name: '하늘', avatar: { hair: HAIRS[0], style: 0 }, pinHash: null },
-        s2: { name: '보리', avatar: { hair: HAIRS[1], style: 1 }, pinHash: 'x' },
-        s3: { name: '망고', avatar: { hair: HAIRS[3], style: 2 }, pinHash: 'x' }
-      },
-      presence: { s2: true }
-    } }
-  };
-  delete tree.classes.gusan1.students.s1.avatar;
+  const KEY = 'sw_mock';
+  const seed = () => ({ classes: { gusan1: {
+    students: {
+      s1: { name: '하늘' },
+      s2: { name: '보리', avatar: { hair: HAIRS[1], style: 1 }, pinHash: 'x' },
+      s3: { name: '망고', avatar: { hair: HAIRS[3], style: 2 }, pinHash: 'x' }
+    },
+    presence: { s2: true }
+  } } });
+  let tree;
+  const load = () => { try { const s = localStorage.getItem(KEY); tree = s ? JSON.parse(s) : seed(); } catch (e) { tree = tree || seed(); } };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(tree)); } catch (e) { } };
+  if (new URLSearchParams(location.search).get('mock') === 'reset') { try { localStorage.removeItem(KEY); } catch (e) { } }
+  load();
   const subs = [];
   const parts = p => p.split('/').filter(Boolean);
   const clone = v => (v === undefined || v === null) ? null : JSON.parse(JSON.stringify(v));
@@ -73,21 +78,25 @@ function makeMockStore() {
     for (let i = 0; i < ks.length - 1; i++) { if (typeof n[ks[i]] !== 'object' || n[ks[i]] === null) n[ks[i]] = {}; n = n[ks[i]]; }
     if (v === null) delete n[ks[ks.length - 1]]; else n[ks[ks.length - 1]] = v;
   };
-  let seq = 10;
+  const commit = () => { save(); fire(); };
+  window.addEventListener('storage', e => { if (e.key === KEY) { load(); fire(); } });
   return {
     get: async p => clone(read(p)),
-    set: async (p, v) => { write(p, v); fire(); },
-    update: async (p, o) => { Object.keys(o).forEach(k => write(p + '/' + k, o[k])); fire(); },
-    remove: async p => { write(p, null); fire(); },
+    set: async (p, v) => { load(); write(p, clone(v)); commit(); },
+    update: async (p, o) => { load(); Object.keys(o).forEach(k => write(p + '/' + k, clone(o[k]))); commit(); },
+    remove: async p => { load(); write(p, null); commit(); },
     on: (p, cb) => { subs.push({ p, cb }); cb(clone(read(p))); },
-    presence: p => { write(p, true); fire(); },
-    newId: () => 's' + (seq++)
+    presence: p => { load(); write(p, true); commit(); },
+    newId: () => 'm' + Date.now().toString(36) + Math.floor(Math.random() * 1000),
+    now: () => Date.now()
   };
 }
 
 function makeFirebaseStore() {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+  let offset = 0;
+  db.ref('.info/serverTimeOffset').on('value', s => { offset = s.val() || 0; });
   return {
     get: p => db.ref(p).get().then(s => s.val()),
     set: (p, v) => db.ref(p).set(v),
@@ -99,8 +108,19 @@ function makeFirebaseStore() {
         if (s.val()) { db.ref(p).onDisconnect().remove(); db.ref(p).set(true); }
       });
     },
-    newId: () => db.ref().push().key
+    newId: () => db.ref().push().key,
+    now: () => Date.now() + offset
   };
 }
 
 function makeStore() { return MOCK ? makeMockStore() : makeFirebaseStore(); }
+
+// ----- 퀴즈 공통 -----
+function markQ(q) { return esc(q).replace(/\[(.+?)\]/, '<mark>$1</mark>'); }
+function choicesOf(set, item) { return item.choices || set.choices; }
+function answerOf(live, qi, sid) { const a = ((live && live.answers) || {})['q' + qi]; return a && a[sid] != null ? a[sid] : null; }
+function correctCount(live, set, sid) {
+  let n = 0;
+  set.items.forEach((it, i) => { if (answerOf(live, i, sid) === it.a) n++; });
+  return n;
+}
