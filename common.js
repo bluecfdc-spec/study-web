@@ -115,6 +115,14 @@ function makeFirebaseStore() {
 
 function makeStore() { return MOCK ? makeMockStore() : makeFirebaseStore(); }
 
+// 접속 기록: 아이가 단어장·복습·오답노트에 언제 들어갔는지 남깁니다 (선생님 포털에서 봄)
+function logVisit(store, sid, kind, extra) {
+  if (!sid) return null;
+  const p = BASE + '/visits/' + sid + '/' + store.newId();
+  try { Promise.resolve(store.set(p, Object.assign({ k: kind, at: store.now() }, extra || {}))).catch(() => { }); } catch (e) { }
+  return p;
+}
+
 // ----- 퀴즈 공통 -----
 function markQ(q) { return esc(q).replace(/\[(.+?)\]/, '<mark>$1</mark>'); }
 function choicesOf(set, item) { return item.choices || set.choices; }
@@ -181,8 +189,8 @@ const Sound = (function () {
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">' +
     '<style>body,button,input,h1,h2,.brand,.stu .name{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif !important;letter-spacing:-0.01em}' +
     'body{font-weight:500}' +
-    'h1,h2,.brand,.hero-t,.qtext,.bignum,.banner,.big,.go,.choice,.key,.name-btn,.d-card,.n-btn,.n-item,.cd,.lz-big,.lz-catname,.lz-card,.chip,.st-num,.stu .name{font-weight:700}' +
-    '.d-card small,.n-btn small,.n-item small,.sub,.key.small,.ghost{font-weight:500}</style>');
+    'h1,h2,.brand,.hero-t,.qtext,.bignum,.banner,.big,.go,.choice,.key,.name-btn,.d-card,.n-btn,.lb-card,.n-item,.cd,.lz-big,.lz-catname,.lz-card,.chip,.st-num,.stu .name{font-weight:700}' +
+    '.d-card small,.n-btn small,.lb-card small,.n-item small,.sub,.key.small,.ghost{font-weight:500}</style>');
   document.addEventListener('dblclick', e => e.preventDefault());
   document.addEventListener('gesturestart', e => e.preventDefault());
   // 수업 화면에서 키보드(화살표·스페이스)로 넘길 때도 버튼과 같은 소리
@@ -215,7 +223,7 @@ const Sound = (function () {
     '.hero-t{font-size:' + (isStage ? 'clamp(26px,3.6vw,46px)' : '32px') + '}' +
     '.banner img.art{width:132px;height:auto;margin:0 auto 6px}' +
     '.st-cell.done img.art{width:86%;height:auto}' +
-    '.d-card,.n-btn{flex-direction:row !important;gap:14px !important;text-align:left}.d-card img.art,.n-btn img.art{width:64px;height:auto;flex:none}' +
+    '.d-card,.n-btn,.lb-card{flex-direction:row !important;gap:14px !important;text-align:left}.d-card img.art,.n-btn img.art,.lb-card img.art{width:56px;height:auto;flex:none}' +
     '.btn-t{display:flex;flex-direction:column;gap:2px}' +
     '.lz-cat img.art{width:clamp(70px,9vw,120px);height:auto}' +
     '.cheer-img{display:flex;justify-content:center}.cheer-img img{width:150px;height:auto}' +
@@ -240,6 +248,7 @@ const Sound = (function () {
     app.querySelectorAll('.st-cell.done svg').forEach(e => { e.outerHTML = art('stamp_complete'); });
     app.querySelectorAll('.d-card:not(.art-on)').forEach(e => { e.classList.add('art-on'); wrapText(e); e.insertAdjacentHTML('afterbegin', art('icon_english')); });
     app.querySelectorAll('.n-btn:not(.art-on)').forEach(e => { e.classList.add('art-on'); wrapText(e); e.insertAdjacentHTML('afterbegin', art('obj_pencil')); });
+    app.querySelectorAll('.lb-card[data-art]:not(.art-on)').forEach(e => { e.classList.add('art-on'); wrapText(e); e.insertAdjacentHTML('afterbegin', art(e.dataset.art)); });
     app.querySelectorAll('.lz-cat:not(.art-on)').forEach(e => {
       e.classList.add('art-on');
       const n = e.querySelector('.lz-catname'), svg = e.querySelector('svg');

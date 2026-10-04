@@ -1,63 +1,74 @@
 // 오늘의 영어 미션: 본문을 하루에 서너 문장씩, 빈칸을 눌러 채우는 숙제
-// {낱말|종류|뜻} 이 빈칸이 됩니다. 종류: n 이름, v 동작, a 모습·비교, p 위치, d 어떻게. 뜻은 단어장에 나옵니다
+// {단어|종류} 가 빈칸이 됩니다. 종류: n 이름, v 동작, a 모습·비교, p 위치, d 어떻게
 const DAILY = {
   id: 'eng5', subject: '영어', title: 'Lesson 5',
   days: [
     { title: '사건이 일어났다', s: [
-      { en: 'Last Saturday, someone {threw|v|던졌다} a cake at the Monalisa in the Botero {Museum|n|미술관} in Bogota, Colombia.', ko: "지난주 토요일, 콜롬비아 보고타에 있는 보테로 미술관에서 누군가가 '모나리자'에 케이크를 던졌다." },
-      { en: 'There were four {eyewitnesses|n|목격자들}.', ko: '목격자는 네 명이 있었다.' },
-      { en: 'What did they {say|v|말하다}?', ko: '그들이 무엇을 말했을까?' },
-      { en: 'Read the following, and find the {criminal|n|범인}.', ko: '다음 내용을 읽고, 범인을 찾아라.' }
+      { en: 'Last Saturday, someone {threw|v} a cake at the Monalisa in the Botero {Museum|n} in Bogota, Colombia.', ko: "지난주 토요일, 콜롬비아 보고타에 있는 보테로 미술관에서 누군가가 '모나리자'에 케이크를 던졌다." },
+      { en: 'There were four {eyewitnesses|n}.', ko: '목격자는 네 명이 있었다.' },
+      { en: 'What did they {say|v}?', ko: '그들이 무엇을 말했을까?' },
+      { en: 'Read the following, and find the {criminal|n}.', ko: '다음 내용을 읽고, 범인을 찾아라.' }
     ] },
     { title: '방문객 Ann의 말', s: [
-      { who: 'Ann Jones · 방문객', en: 'I was {looking at|v|~을 보고 있는} the Monalisa, and someone threw a cake at the {painting|n|그림}.', ko: "저는 '모나리자'를 보고 있었는데, 누군가가 그림에 케이크를 던졌어요." },
-      { who: 'Ann Jones · 방문객', en: 'I {turned around|v|뒤돌아보았다} and saw an old man.', ko: '저는 뒤를 돌아보았고 한 노인을 봤어요.' },
-      { who: 'Ann Jones · 방문객', en: 'He was standing {in front of|p|~ 앞에} a wheelchair.', ko: '그는 휠체어 앞에 서 있었죠.' },
-      { who: 'Ann Jones · 방문객', en: "I'm about 170 cm tall, and he was a little {taller than|a|~보다 키가 큰} me.", ko: '저는 키가 약 170cm인데, 그는 저보다 조금 더 키가 컸어요.' }
+      { who: 'Ann Jones · 방문객', en: 'I was {looking at|v} the Monalisa, and someone threw a cake at the {painting|n}.', ko: "저는 '모나리자'를 보고 있었는데, 누군가가 그림에 케이크를 던졌어요." },
+      { who: 'Ann Jones · 방문객', en: 'I {turned around|v} and saw an old man.', ko: '저는 뒤를 돌아보았고 한 노인을 봤어요.' },
+      { who: 'Ann Jones · 방문객', en: 'He was standing {in front of|p} a wheelchair.', ko: '그는 휠체어 앞에 서 있었죠.' },
+      { who: 'Ann Jones · 방문객', en: "I'm about 170 cm tall, and he was a little {taller than|a} me.", ko: '저는 키가 약 170cm인데, 그는 저보다 조금 더 키가 컸어요.' }
     ] },
     { title: '관리인 Carlos의 말 ①', s: [
-      { who: 'Carlos Diaz · 관리인', en: 'An old man with {gray|a|회색의} hair was running away, and something {fell off|v|~에서 떨어졌다} his head.', ko: '머리가 회색인 한 노인이 도망치고 있었는데, 머리에서 무언가가 떨어졌습니다.' },
-      { who: 'Carlos Diaz · 관리인', en: 'It was his {wig|n|가발}.', ko: '그건 그의 가발이었죠.' },
-      { who: 'Carlos Diaz · 관리인', en: "I {ran after|v|~을 쫓아갔다} him, but I couldn't {catch|v|잡다} him.", ko: '저는 그를 쫓아서 뛰어갔지만, 그를 잡을 수가 없었습니다.' },
-      { who: 'Carlos Diaz · 관리인', en: 'He was {faster than|a|~보다 빠른} me.', ko: '그는 저보다 빨랐어요.' }
+      { who: 'Carlos Diaz · 관리인', en: 'An old man with {gray|a} hair was running away, and something {fell off|v} his head.', ko: '머리가 회색인 한 노인이 도망치고 있었는데, 머리에서 무언가가 떨어졌습니다.' },
+      { who: 'Carlos Diaz · 관리인', en: 'It was his {wig|n}.', ko: '그건 그의 가발이었죠.' },
+      { who: 'Carlos Diaz · 관리인', en: "I {ran after|v} him, but I couldn't {catch|v} him.", ko: '저는 그를 쫓아서 뛰어갔지만, 그를 잡을 수가 없었습니다.' },
+      { who: 'Carlos Diaz · 관리인', en: 'He was {faster than|a} me.', ko: '그는 저보다 빨랐어요.' }
     ] },
     { title: 'Carlos의 말 ② · 경비원 Diego', s: [
-      { who: 'Carlos Diaz · 관리인', en: 'In fact, the old man was not {old|a|나이 든}.', ko: '사실, 그 노인은 나이가 들지 않았죠.' },
-      { who: 'Carlos Diaz · 관리인', en: 'He was a {young|a|젊은} man with long {brown|a|갈색의} hair.', ko: '그는 긴 갈색 머리를 한 젊은 남자였어요.' },
-      { who: 'Diego Perez · 경비원', en: 'I went to the {crime scene|n|범죄 현장}, and there were {pieces|n|조각들} of cake all over the painting.', ko: '저는 범죄 현장으로 갔는데, 그림 곳곳에 케이크 조각들이 있었습니다.' }
+      { who: 'Carlos Diaz · 관리인', en: 'In fact, the old man was not {old|a}.', ko: '사실, 그 노인은 나이가 들지 않았죠.' },
+      { who: 'Carlos Diaz · 관리인', en: 'He was a {young|a} man with long {brown|a} hair.', ko: '그는 긴 갈색 머리를 한 젊은 남자였어요.' },
+      { who: 'Diego Perez · 경비원', en: 'I went to the {crime scene|n}, and there were {pieces|n} of cake all over the painting.', ko: '저는 범죄 현장으로 갔는데, 그림 곳곳에 케이크 조각들이 있었습니다.' }
     ] },
     { title: 'Diego의 말 ② · 빵집 주인 Camila', s: [
-      { who: 'Diego Perez · 경비원', en: 'There was also a wheelchair {near|p|~ 근처에} the painting, and I found a cake box {next to|p|~ 옆에} the wheelchair.', ko: '또한 그림 근처에는 휠체어가 있었고, 휠체어 옆에서 저는 케이크 상자를 발견했어요.' },
-      { who: 'Diego Perez · 경비원', en: "The box was from Camila's {Bakery|n|빵집}.", ko: '그 상자는 카밀라 빵집의 상자였습니다.' },
-      { who: 'Camila Santos · 빵집 주인', en: 'Last Friday, a young man {came in|v|들어왔다}.', ko: '지난주 금요일, 한 젊은 남자가 들어왔어요.' }
+      { who: 'Diego Perez · 경비원', en: 'There was also a wheelchair {near|p} the painting, and I found a cake box {next to|p} the wheelchair.', ko: '또한 그림 근처에는 휠체어가 있었고, 휠체어 옆에서 저는 케이크 상자를 발견했어요.' },
+      { who: 'Diego Perez · 경비원', en: "The box was from Camila's {Bakery|n}.", ko: '그 상자는 카밀라 빵집의 상자였습니다.' },
+      { who: 'Camila Santos · 빵집 주인', en: 'Last Friday, a young man {came in|v}.', ko: '지난주 금요일, 한 젊은 남자가 들어왔어요.' }
     ] },
     { title: '빵집 주인 Camila의 말', s: [
-      { who: 'Camila Santos · 빵집 주인', en: "I spoke to him in {Spanish|n|스페인어}, but he didn't {understand|v|이해하다} me.", ko: '저는 그에게 스페인어로 말했지만, 그는 제 말을 이해하지 못했어요.' },
-      { who: 'Camila Santos · 빵집 주인', en: 'He spoke only {English|n|영어}.', ko: '그는 영어만 말했죠.' },
-      { who: 'Camila Santos · 빵집 주인', en: 'We had a lot of {different|a|다양한} cakes, but he just wanted the {smallest|a|가장 작은} one.', ko: '저희 가게에는 다양한 케이크들이 많이 있었는데, 그는 단지 가장 작은 것을 원했어요.' },
-      { who: 'Camila Santos · 빵집 주인', en: 'We sold only one cake that day, so I {remember|v|기억하다} him {clearly|d|분명히}.', ko: '저희는 그날 딱 한 개의 케이크만 팔았으니까, 저는 그를 분명히 기억해요.' }
+      { who: 'Camila Santos · 빵집 주인', en: "I spoke to him in {Spanish|n}, but he didn't {understand|v} me.", ko: '저는 그에게 스페인어로 말했지만, 그는 제 말을 이해하지 못했어요.' },
+      { who: 'Camila Santos · 빵집 주인', en: 'He spoke only {English|n}.', ko: '그는 영어만 말했죠.' },
+      { who: 'Camila Santos · 빵집 주인', en: 'We had a lot of {different|a} cakes, but he just wanted the {smallest|a} one.', ko: '저희 가게에는 다양한 케이크들이 많이 있었는데, 그는 단지 가장 작은 것을 원했어요.' },
+      { who: 'Camila Santos · 빵집 주인', en: 'We sold only one cake that day, so I {remember|v} him {clearly|d}.', ko: '저희는 그날 딱 한 개의 케이크만 팔았으니까, 저는 그를 분명히 기억해요.' }
     ] },
     { title: '범인은 누구?', s: [
-      { who: 'Camila Santos · 빵집 주인', en: 'Oh, he had {blue|a|파란} eyes.', ko: '아, 그의 눈은 파란색이었어요.' },
-      { en: 'Now, look at the {information|n|정보} about the {suspects|n|용의자들}.', ko: '이제, 용의자들에 관한 정보를 보아라.' },
-      { en: 'Who {threw|v|던졌다} the cake at the Monalisa?', ko: "누가 '모나리자'에 케이크를 던졌을까?" }
+      { who: 'Camila Santos · 빵집 주인', en: 'Oh, he had {blue|a} eyes.', ko: '아, 그의 눈은 파란색이었어요.' },
+      { en: 'Now, look at the {information|n} about the {suspects|n}.', ko: '이제, 용의자들에 관한 정보를 보아라.' },
+      { en: 'Who {threw|v} the cake at the Monalisa?', ko: "누가 '모나리자'에 케이크를 던졌을까?" }
     ] }
   ],
+  // 단어장에 보여 줄 뜻
+  gloss: {
+    'threw': '던졌다', 'Museum': '미술관', 'eyewitnesses': '목격자들', 'say': '말하다', 'criminal': '범인',
+    'looking at': '~을 보고 있는', 'painting': '그림', 'turned around': '뒤를 돌아보았다', 'in front of': '~ 앞에',
+    'taller than': '~보다 키가 더 큰', 'gray': '회색의', 'fell off': '~에서 떨어졌다', 'wig': '가발',
+    'ran after': '~을 쫓아 뛰어갔다', 'catch': '잡다', 'faster than': '~보다 더 빠른', 'old': '나이 든', 'young': '젊은',
+    'brown': '갈색의', 'crime scene': '범죄 현장', 'pieces': '조각들', 'near': '~ 근처에', 'next to': '~ 옆에',
+    'Bakery': '빵집', 'came in': '들어왔다', 'Spanish': '스페인어', 'understand': '이해하다', 'English': '영어',
+    'different': '다양한, 다른', 'smallest': '가장 작은', 'remember': '기억하다', 'clearly': '분명히', 'blue': '파란',
+    'information': '정보', 'suspects': '용의자들'
+  },
   extra: { n: [], v: ['bought', 'sold'], a: ['shorter than', 'red'], p: ['behind', 'under', 'on top of'], d: ['slowly', 'quickly', 'loudly'] }
 };
 
 const Daily = (function () {
   const C = DAILY;
-  let store = null, all = {}, S = null, result = null, vocab = false;
+  let store = null, all = {}, S = null, result = null, view = '', hide = false;   // view 'words' = 단어장
 
   // 문장을 조각(글자, 빈칸)으로 나눕니다
   const sentences = [], byId = {}, pools = {};
   C.days.forEach((d, di) => d.s.forEach(x => {
     const idx = sentences.length, parts = [], blanks = [];
     let last = 0;
-    x.en.replace(/\{([^}|]+)(?:\|(\w+))?(?:\|([^}]+))?\}/g, (m, w, t, mean, off) => {
+    x.en.replace(/\{([^}|]+)(?:\|(\w+))?\}/g, (m, w, t, off) => {
       parts.push(x.en.slice(last, off)); parts.push({ b: blanks.length });
-      const bl = { w: w, t: t || 'n', mean: mean || '', id: 's' + idx + 'b' + blanks.length };
+      const bl = { w: w, t: t || 'n', id: 's' + idx + 'b' + blanks.length };
       blanks.push(bl); last = off + m.length; return m;
     });
     parts.push(x.en.slice(last));
@@ -81,27 +92,40 @@ const Daily = (function () {
     '.d-opt{min-height:64px;border-radius:20px;background:#fff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:19px;font-weight:700;padding:6px;border:3px solid transparent}' +
     '.d-opt.ok{background:var(--mint);border-color:var(--ok)}.d-opt.no{background:var(--pink)}.d-opt:disabled{cursor:default}' +
     '.d-tag{align-self:flex-start;background:#FBEDE8;border-radius:999px;padding:6px 14px;font-size:15px}' +
-    '.d-list{font-size:17px;line-height:1.9;text-align:center}.d-list b{font-family:system-ui,sans-serif}' +
-    '.d-vlist{display:flex;flex-direction:column;gap:8px;max-height:58vh;overflow-y:auto;-webkit-overflow-scrolling:touch}' +
-    '.d-vrow{background:#fff;border-radius:18px;padding:12px 16px}.d-vtop{display:flex;align-items:baseline;gap:10px}' +
-    '.d-vw{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:21px;font-weight:700}.d-vm{font-size:17px;color:var(--sub);flex:1}' +
-    '.d-vn{font-size:13px;color:#9C2748;background:var(--pink);border-radius:999px;padding:2px 9px;white-space:nowrap}' +
-    '.d-vs{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;color:var(--sub);line-height:1.5;margin-top:4px}</style>');
+    '.w-list{background:#fff;border-radius:24px;padding:6px 16px;max-height:52vh;overflow-y:auto;-webkit-overflow-scrolling:touch}' +
+    '.w-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid #F1E2DE;font-size:17px}.w-row:first-child{border-top:none}' +
+    '.w-row b{flex:0 0 46%;font-size:19px;font-weight:700;overflow-wrap:anywhere}.w-row span{flex:1;min-width:0;color:var(--sub)}' +
+    '.w-row i{flex:none;font-style:normal;font-size:13px;background:var(--pink);border-radius:999px;padding:3px 9px}' +
+    '.w-list.hide span{visibility:hidden}' +
+    '.d-list{font-size:17px;line-height:1.9;text-align:center}.d-list b{font-family:system-ui,sans-serif}</style>');
 
   function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function dateOf(ms) { return new Date(ms + 9 * 3600000).toISOString().slice(0, 10); }   // 한국 날짜
   function today() { return dateOf(store.now()); }
   function rec(sid) { return (all[sid] || {})[C.id] || {}; }
   function doneToday(sid) { return rec(sid).lastDate === today(); }
-  // 한 번이라도 틀렸던 낱말 전부 (오답노트용, 맞혀도 지워지지 않음)
+  // 한 번이라도 틀렸던 단어 전부 (단어장용, 맞혀도 지워지지 않음)
   function missedIds(sid) { const r = rec(sid); return Object.keys(Object.assign({}, r.wrong || {}, r.missed || {})).filter(id => byId[id]); }
-  function missCount(sid, id) { return ((rec(sid).missN || {})[id]) || 1; }
-  // 복습 화면에 들어온 기록 (선생님 포털의 복습 기록에 쓰입니다). k: vocab 단어장, review 단어 복습
-  function logAct(sid, k) { store.set(BASE + '/acts/' + sid + '/' + store.newId(), { k: k, t: store.now() }); }
-  // 틀렸던 낱말만 다시 풀기. 미션 기록은 바뀌지 않습니다
+  // 단어장: 틀렸던 단어를 한데 모아 많이 틀린 순으로 (같은 단어는 하나로 합칩니다)
+  function wordList(sid) {
+    const r = rec(sid), cnt = r.missN || {}, still = r.wrong || {}, map = {};
+    missedIds(sid).forEach(id => {
+      const w = byId[id].s.blanks[byId[id].bi].w, k = w.toLowerCase();
+      const o = map[k] = map[k] || { w: w, n: 0, still: false, ko: glossOf(w) };
+      o.n += cnt[id] || 1; if (still[id]) o.still = true;
+    });
+    return Object.keys(map).map(k => map[k]).sort((a, b) => b.n - a.n || a.w.localeCompare(b.w));
+  }
+  function glossOf(w) {
+    if (C.gloss[w]) return C.gloss[w];
+    const k = Object.keys(C.gloss).filter(x => x.toLowerCase() === String(w).toLowerCase())[0];
+    return k ? C.gloss[k] : '';
+  }
+  // 틀린 단어 복습하기. 미션 기록은 바뀌지 않습니다
   function beginPractice(sid) {
     const queue = shuffle(missedIds(sid)).map(id => ({ kind: 'q', s: byId[id].s, bi: byId[id].bi, review: true }));
-    S = { queue: queue, i: 0, right: 0, total: queue.length, done: 0, wrong: {}, isNew: false, practice: true, picked: null, opts: null };
+    S = { queue: queue, i: 0, right: 0, total: queue.length, done: 0, wrong: {}, isNew: false, practice: true, picked: null, opts: null, today: {} };
+    S.visit = logVisit(store, sid, 'review');
     prep();
   }
 
@@ -120,7 +144,7 @@ const Daily = (function () {
     p.review.forEach(id => queue.push({ kind: 'q', s: byId[id].s, bi: byId[id].bi, review: true }));
     p.sens.forEach(s => { queue.push({ kind: 'card', s: s }); s.blanks.forEach((b, bi) => queue.push({ kind: 'q', s: s, bi: bi })); });
     p.mix.forEach(id => queue.push({ kind: 'q', s: byId[id].s, bi: byId[id].bi, review: true }));
-    S = { queue: queue, i: 0, right: 0, total: countQ(p), done: 0, wrong: Object.assign({}, rec(sid).wrong || {}), isNew: p.sens.length > 0, picked: null, opts: null };
+    S = { queue: queue, i: 0, right: 0, total: countQ(p), done: 0, wrong: Object.assign({}, rec(sid).wrong || {}), isNew: p.sens.length > 0, picked: null, opts: null, today: {}, dayNo: p.sens.length ? p.day + 1 : 0 };
     prep();
   }
   function prep() {
@@ -142,11 +166,13 @@ const Daily = (function () {
       title: C.title, days: C.days.length, day: S.isNew ? (r.day || 0) + 1 : (r.day || 0),
       lastDate: t, streak: streak, wrong: wrongWords.length ? S.wrong : null
     });
-    await store.set(path + '/log/' + t, { right: S.right, total: S.total });
+    // 그날 숙제에서 틀린 단어도 함께 남겨 선생님 포털에서 회차별로 볼 수 있게 합니다
+    const tw = Object.keys(S.today).map(id => S.today[id]).filter((w, i, a) => a.indexOf(w) === i);
+    await store.set(path + '/log/' + t, { right: S.right, total: S.total, day: S.dayNo, words: tw.length ? tw : null });
     S = null;
   }
 
-  function sentenceHTML(sen, mode, bi) {   // mode: 'show' 낱말 강조, 'ask' bi번 빈칸 묻기
+  function sentenceHTML(sen, mode, bi) {   // mode: 'show' 단어 강조, 'ask' bi번 빈칸 묻기
     return sen.parts.map(p => {
       if (typeof p === 'string') return esc(p);
       const w = sen.blanks[p.b].w;
@@ -161,33 +187,32 @@ const Daily = (function () {
     init: function (st, onChange) { store = st; store.on(BASE + '/daily', v => { all = v || {}; onChange(); }); },
     doneToday: doneToday,
     missed: missedIds,
-    logAct: logAct,
     lobbyCard: function (sid) {
       const r = rec(sid), n = C.days.length, day = r.day || 0;
       if (doneToday(sid)) return '<button class="d-card" data-act="d-open">오늘의 영어 미션 완료!<small>연속 ' + (r.streak || 1) + '일째 · 내일 또 만나요</small></button>';
       return '<button class="d-card" data-act="d-open">오늘의 영어 미션<small>' + esc(C.title) + ' · ' + (day < n ? (day + 1) + '일째 / ' + n + '일' : '복습 연습') + ' · 3분이면 끝</small></button>';
     },
+    words: wordList,
+    gloss: glossOf,
     html: function (sid) {
-      if (vocab) {   // 영어 단어장: 틀렸던 낱말을 많이 틀린 순서로 한눈에
-        const ids = missedIds(sid).sort((a, b) => missCount(sid, b) - missCount(sid, a));
-        return '<h1>영어 단어장</h1><p class="sub">' + (ids.length ? '내가 틀렸던 낱말 ' + ids.length + '개' : '아직 틀린 낱말이 없어요') + '</p>' +
-          '<div class="d-vlist">' + ids.map(id => {
-            const x = byId[id], bl = x.s.blanks[x.bi];
-            return '<div class="d-vrow"><div class="d-vtop"><span class="d-vw">' + esc(bl.w) + '</span><span class="d-vm">' + esc(bl.mean) + '</span><span class="d-vn">' + missCount(sid, id) + '번 틀림</span></div>' +
-              '<div class="d-vs">' + x.s.parts.map(p => typeof p === 'string' ? esc(p) : (p.b === x.bi ? '<span class="d-hl">' + esc(x.s.blanks[p.b].w) + '</span>' : esc(x.s.blanks[p.b].w))).join('') + '</div></div>';
-          }).join('') + '</div>' +
-          (ids.length ? '<button class="big" data-act="d-review" style="margin-top:auto">틀린 단어 복습하기</button>' : '') +
-          '<button class="ghost" data-act="d-exit"' + (ids.length ? '' : ' style="margin-top:auto"') + '>대기실로</button>';
+      if (view === 'words') {
+        const ws = wordList(sid);
+        return '<h1>단어장</h1><p class="sub">' + (ws.length ? '숙제에서 틀린 단어 ' + ws.length + '개 · 많이 틀린 순' : '아직 틀린 단어가 없어요') + '</p>' +
+          (ws.length ? '<div class="w-list' + (hide ? ' hide' : '') + '">' + ws.map(o => '<div class="w-row"><b class="d-en" style="line-height:1.3">' + esc(o.w) + '</b><span>' + esc(o.ko) + '</span>' + (o.n > 1 ? '<i>' + o.n + '번</i>' : '') + '</div>').join('') + '</div>' +
+            '<button class="ghost" data-act="d-hide">' + (hide ? '뜻 다시 보기' : '뜻 가리고 외워 보기') + '</button>' +
+            '<button class="big" data-act="d-review" style="margin-top:auto">틀린 단어 복습하기</button>'
+            : '<div class="card"><p class="sub">영어 미션에서 틀린 단어가 생기면 여기에 모여요.</p></div><span style="margin-top:auto"></span>') +
+          '<button class="ghost" data-act="d-exit">대기실로</button>';
       }
       if (result && result.practice) {
-        return '<h1>한 바퀴 끝!</h1><div class="card"><p class="sub">이번에 맞힌 낱말</p><p class="bignum">' + result.right + ' / ' + result.total + '</p></div>' +
-          '<p class="sub">이 낱말들은 단어장에 계속 남아 있어요</p>' +
-          '<button class="big" data-act="d-review" style="margin-top:auto">한 번 더 풀기</button><button class="ghost" data-act="d-exit">대기실로</button>';
+        return '<h1>한 바퀴 끝!</h1><div class="card"><p class="sub">이번에 맞힌 단어</p><p class="bignum">' + result.right + ' / ' + result.total + '</p></div>' +
+          '<p class="sub">이 단어들은 단어장에 계속 남아 있어요</p>' +
+          '<button class="big" data-act="d-review" style="margin-top:auto">한 번 더 풀기</button><button class="ghost" data-act="d-words">단어장 보기</button><button class="ghost" data-act="d-exit">대기실로</button>';
       }
       if (result) {
         return '<h1>미션 완료!</h1><div class="card"><p class="sub">오늘 맞힌 문제</p><p class="bignum">' + result.right + ' / ' + result.total + '</p></div>' +
           '<div class="wait">연속 ' + result.streak + '일째예요</div>' +
-          (result.words.length ? '<div class="card"><p class="sub">내일 다시 만날 낱말</p><p class="d-list"><b>' + result.words.map(esc).join('</b> · <b>') + '</b></p></div>' : '<p class="sub">틀린 낱말이 하나도 없어요!</p>') +
+          (result.words.length ? '<div class="card"><p class="sub">내일 다시 만날 단어</p><p class="d-list"><b>' + result.words.map(esc).join('</b> · <b>') + '</b></p></div>' : '<p class="sub">틀린 단어가 하나도 없어요!</p>') +
           '<button class="big" data-act="d-exit" style="margin-top:auto">대기실로</button>';
       }
       if (!S) {
@@ -205,38 +230,40 @@ const Daily = (function () {
       const who = cur.s.who ? '<div class="d-tag">' + esc(cur.s.who) + '</div>' : '';
       if (cur.kind === 'card') {
         return prog + '<div class="d-tag">새 문장</div>' + who + '<div class="card"><p class="d-en">' + sentenceHTML(cur.s, 'show') + '</p><p class="d-ko">' + esc(cur.s.ko) + '</p></div>' +
-          '<p class="sub">색칠한 낱말을 잘 봐 두세요</p><button class="big" data-act="d-next" style="margin-top:auto">봤어요! 문제 풀기</button>';
+          '<p class="sub">색칠한 단어를 잘 봐 두세요</p><button class="big" data-act="d-next" style="margin-top:auto">봤어요! 문제 풀기</button>';
       }
       const bl = cur.s.blanks[cur.bi], answered = S.picked != null, ok = S.picked === bl.w;
       return prog + '<div class="d-tag">' + (S.practice ? '틀린 단어 복습' : (cur.review ? '다시 풀기' : '빈칸 채우기')) + '</div>' + who +
         '<div class="card"><p class="d-en">' + sentenceHTML(cur.s, 'ask', cur.bi) + '</p><p class="d-ko">' + esc(cur.s.ko) + '</p></div>' +
         '<div class="d-opts">' + S.opts.map((w, i) => '<button class="d-opt' + (answered ? (w === bl.w ? ' ok' : (w === S.picked ? ' no' : '')) : '') + '" data-act="d-pick" data-i="' + i + '"' + (answered ? ' disabled' : '') + '>' + esc(w) + '</button>').join('') + '</div>' +
-        (answered ? '<p class="sub">' + (ok ? '정답이에요!' : (S.practice ? '괜찮아요. 단어장에 남아 있어요' : '괜찮아요. 내일 한 번 더 만나요')) + '</p><button class="big" data-act="d-next" style="margin-top:auto">다음</button>' : '<p class="sub">빈칸에 들어갈 말을 눌러요</p>' + (S.practice ? '<button class="ghost" data-act="d-exit" style="margin-top:auto">대기실로</button>' : ''));
+        (answered ? '<p class="sub">' + (ok ? '정답이에요!' : (S.practice ? '괜찮아요. 단어장에 남아 있어요' : '괜찮아요. 내일 한 번 더 만나요')) + '</p><button class="big" data-act="d-next" style="margin-top:auto">다음</button>' : '<p class="sub">빈칸에 들어갈 말을 눌러요</p>' + (S.practice ? '<button class="ghost" data-act="d-exit" style="margin-top:auto">그만하기</button>' : ''));
     },
     // 눌린 버튼 처리. 화면을 바꿔야 하면 'daily', 대기실로 가면 'lobby' 를 돌려줍니다
     click: async function (act, b, sid) {
-      if (act === 'd-open') { result = null; S = null; vocab = false; return 'daily'; }
-      if (act === 'd-exit') { result = null; S = null; vocab = false; return 'lobby'; }
-      if (act === 'd-vocab') { result = null; S = null; vocab = true; logAct(sid, 'vocab'); return 'daily'; }
+      if (act === 'd-open') { result = null; S = null; view = ''; return 'daily'; }
+      if (act === 'd-exit') { result = null; S = null; view = ''; return 'lobby'; }
+      if (act === 'd-words') { result = null; S = null; view = 'words'; hide = false; logVisit(store, sid, 'words'); return 'daily'; }
+      if (act === 'd-hide') { hide = !hide; return 'daily'; }
       if (act === 'd-start') { begin(sid); return 'daily'; }
-      if (act === 'd-review') { result = null; S = null; vocab = false; if (missedIds(sid).length) { beginPractice(sid); logAct(sid, 'review'); } else vocab = true; return 'daily'; }
+      if (act === 'd-review') { result = null; S = null; if (missedIds(sid).length) { view = ''; beginPractice(sid); } else view = 'words'; return 'daily'; }
       if (act === 'd-pick' && S && S.picked == null) {
         const cur = S.queue[S.i], bl = cur.s.blanks[cur.bi];
         S.picked = S.opts[Number(b.dataset.i)]; S.done++;
         if (S.picked === bl.w) { S.right++; delete S.wrong[bl.id]; Sound.good(); }
         else {
           S.wrong[bl.id] = bl.w; Sound.soft();
-          const m = {}, n = {}; m[bl.id] = bl.w;   // 틀린 낱말은 바로 단어장에 남기고, 틀린 횟수도 셉니다
-          n[bl.id] = ((rec(sid).missN || {})[bl.id] || 0) + 1;
+          S.today[bl.id] = bl.w;
+          const r0 = rec(sid), m = {}, c = {}; m[bl.id] = bl.w;   // 틀린 단어는 바로 단어장에 남기고, 몇 번 틀렸는지도 셉니다
+          c[bl.id] = ((r0.missN || {})[bl.id] || ((r0.missed || {})[bl.id] ? 1 : 0)) + 1;
           store.update(BASE + '/daily/' + sid + '/' + C.id + '/missed', m);
-          store.update(BASE + '/daily/' + sid + '/' + C.id + '/missN', n);
+          store.update(BASE + '/daily/' + sid + '/' + C.id + '/missN', c);
         }
         return 'daily';
       }
       if (act === 'd-next' && S) {
         S.i++;
         if (S.i >= S.queue.length) {
-          if (S.practice) { result = { practice: true, right: S.right, total: S.total }; S = null; } else await finish(sid);
+          if (S.practice) { result = { practice: true, right: S.right, total: S.total }; if (S.visit) store.update(S.visit, { right: S.right, total: S.total }); S = null; } else await finish(sid);
           Sound.fanfare();
         } else prep();
         return 'daily';
