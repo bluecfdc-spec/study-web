@@ -64,6 +64,9 @@ mark{background:var(--pink);color:inherit;border-radius:12px;padding:2px 10px}
 .why{font-size:19px;line-height:1.6;text-align:center}
 .bignum{font-size:54px;text-align:center}
 .mock{background:var(--blue);border-radius:14px;padding:8px 12px;font-size:14px;text-align:center}
+/* 단어장: 영어 단어는 아무리 길어도 한 줄로. 길면 뜻 칸이 줄어들고, 뜻(한글)만 아래로 줄바꿈됩니다 */
+.w-row b{flex:none !important;min-width:38%;white-space:nowrap !important;overflow-wrap:normal !important}
+.w-row span{word-break:keep-all;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
