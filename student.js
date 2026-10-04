@@ -37,7 +37,7 @@ function quizHTML() {
   const top = '<div class="row" style="align-items:center"><div class="chip">' + esc(set.subject) + ' · ' + esc(set.unit) + '</div><div class="sub">문제 ' + (qi + 1) + ' / ' + n + '</div></div>';
   if (live.phase === 'end') {
     return '<h1>끝! 수고했어요</h1><div class="card"><p class="sub">내가 맞힌 문제</p><p class="bignum">' + correctCount(live, set, me) + ' / ' + n + '</p></div>' +
-      '<div class="card">' + oxRow(live, set, me) + '</div><p class="sub">틀린 문제는 오답노트에서 다시 풀 수 있어요</p>';
+      '<div class="card">' + oxRow(live, set, me) + '</div><p class="sub">틀린 문제는 수업 문제 다시 풀기에서 또 풀 수 있어요</p>';
   }
   const mine = answerOf(live, qi, me), ch = choicesOf(set, it);
   if (live.phase === 'reveal') {
@@ -107,7 +107,7 @@ function render() {
     h = '<div class="lb-friends">' + ids.map(id => {
         const on = !!presence[id] || id === me;
         return '<div class="lb-f' + (on ? '' : ' off') + '">' + avatarSVG(students[id].avatar, 46) + '<div><div>' + esc(students[id].name) + (id === me ? ' (나)' : '') + '</div>' +
-          '<div class="lb-s">' + (on ? '접속 중' : '없음') + (Daily.doneToday(id) ? ' · 미션 완료' : '') + '</div></div></div>';
+          '<div class="lb-s">' + (on ? '접속 중' : '없음') + (Daily.doneToday(id) ? '<br>미션 완료' : '') + '</div></div></div>';
       }).join('') + '</div>' +
       Notes.stamps(me) + Daily.lobbyCard(me) + Notes.lobbyButton(me) +
       '<div class="row" style="margin-top:auto"><button class="ghost" data-act="editAvatar">캐릭터 바꾸기</button><button class="ghost" data-act="logout">나가기</button></div>';
