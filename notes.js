@@ -1,4 +1,4 @@
-// 학생 화면 덧붙임: 미션 도장판(Stamps)과 오답노트(Notes)
+// 학생 화면 덧붙임: 미션 도장판(Stamps), 대기실 버튼들, 수업 문제 다시 풀기(Notes)
 document.head.insertAdjacentHTML('beforeend', '<style>' +
   '.st-board{background:#fff;border-radius:26px;padding:14px 12px}' +
   '.st-title{display:flex;justify-content:space-between;font-size:16px;color:var(--sub);padding:0 6px 8px}' +
@@ -7,9 +7,11 @@ document.head.insertAdjacentHTML('beforeend', '<style>' +
   '.st-cell.done{background:var(--pink)}.st-cell.now{background:var(--yellow);box-shadow:inset 0 0 0 3px var(--ink);color:var(--ink)}' +
   '.st-cell svg{width:78%;height:auto}.st-num{font-size:19px}' +
   '.n-btn{background:var(--pink);border-radius:26px;width:100%;display:flex;flex-direction:column;align-items:center;gap:2px}' +
-  '.d-card,.n-btn{min-height:104px;justify-content:center;padding:18px;font-size:25px}.d-card small,.n-btn small{font-size:15px;color:var(--sub)}' +
-  '.lb-friends{display:flex;justify-content:space-around;gap:6px;background:#fff;border-radius:22px;padding:10px 8px}' +
-  '.lb-f{display:flex;align-items:center;gap:6px;font-size:15px;min-width:0}.lb-f.off{opacity:.45}.lb-s{font-size:12px;color:var(--ok)}.lb-f.off .lb-s{color:var(--sub)}' +
+  '.d-card,.n-btn{min-height:86px;justify-content:flex-start;padding:14px 18px;font-size:22px}.d-card small,.n-btn small{font-size:14px;color:var(--sub)}' +
+  '.n-btn.vocab{background:var(--mint)}.n-btn.rev{background:var(--blue)}' +
+  '.lb-friends{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 6px;background:#fff;border-radius:22px;padding:10px 8px}' +
+  '.lb-f{display:flex;align-items:center;gap:6px;font-size:14px;min-width:0}.lb-f svg{flex:none;width:38px;height:38px}.lb-f>div{min-width:0}' +
+  '.lb-f>div>div:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lb-f.off{opacity:.45}.lb-s{font-size:11px;line-height:1.25;color:var(--ok)}.lb-f.off .lb-s{color:var(--sub)}' +
   '.n-item{background:#fff;border-radius:24px;padding:16px 18px;font-size:19px;text-align:left;width:100%;display:flex;flex-direction:column;gap:4px}' +
   '.n-item small{font-size:15px;color:var(--sub)}.n-item:disabled{opacity:.6;cursor:default}' +
   '.choice.right{border-color:var(--ink)}.choice.miss{background:#FBEDE8;text-decoration:line-through}.choice.fade{opacity:.4}' +
@@ -76,28 +78,32 @@ const Notes = (function () {
       store.on(BASE + '/daily', v => { daily = v || {}; onChange(); });
     },
     stamps: function (sid) { return Stamps.html(sid, daily); },
+    // 대기실 버튼 세 개: 영어 단어장, 틀린 단어 복습, 수업 문제 다시 풀기 (그림은 여기서 직접 넣습니다)
     lobbyButton: function (sid) {
-      const n = mine(sid).reduce((k, s) => k + s.wrong.length, 0) + Daily.missed(sid).length;
-      return '<button class="n-btn" data-act="n-list">오답노트<small>' + (n ? '다시 풀 문제 ' + n + '개' : '틀린 문제가 생기면 여기에 모여요') + '</small></button>';
+      const eng = Daily.missed(sid).length, cls = mine(sid).reduce((k, s) => k + s.wrong.length, 0);
+      const btn = (kind, act, pic, title, sub) => '<button class="n-btn art-on ' + kind + '" data-act="' + act + '"><img class="art" src="assets/' + pic + '.webp" alt="" draggable="false">' +
+        '<span class="btn-t">' + title + '<small>' + sub + '</small></span></button>';
+      return btn('vocab', 'd-vocab', 'cream_book', '영어 단어장', eng ? '내가 틀린 낱말 ' + eng + '개 한눈에 보기' : '틀린 낱말이 생기면 여기에 모여요') +
+        btn('rev', 'd-review', 'obj_pencil', '틀린 영어 단어 복습', eng ? eng + '개 다시 풀기' : '아직 복습할 낱말이 없어요') +
+        btn('', 'n-list', 'icon_korean', '수업 문제 다시 풀기', cls ? '수업에서 틀린 문제 ' + cls + '개' : '수업에서 푼 문제가 여기에 모여요');
     },
     html: function (sid) {
       if (!run) {
-        const list = mine(sid), eng = Daily.missed(sid).length;
-        return '<h1>오답노트</h1><p class="sub">틀린 문제는 몇 번이든 다시 풀 수 있어요</p>' +
-          (eng ? '<button class="n-item" data-act="d-review" style="background:var(--yellow)">영어 · ' + esc(DAILY.title) + ' 낱말<small>숙제에서 틀린 낱말 ' + eng + '개</small></button>' : '') +
+        const list = mine(sid);
+        return '<h1>수업 문제 다시 풀기</h1><p class="sub">선생님과 푼 퀴즈에서 틀린 문제예요</p>' +
           (list.length ? list.map(s => '<button class="n-item" data-act="n-open" data-id="' + esc(s.id) + '"' + (s.wrong.length ? '' : ' disabled') + '>' +
             esc(s.set.subject) + ' · ' + esc(s.set.unit) + '<small>' + dayText(s.at) + ' · ' + (s.wrong.length ? '틀린 문제 ' + s.wrong.length + '개' : '다 맞혔어요!') + '</small></button>').join('')
-            : (eng ? '' : '<div class="card"><p class="sub">아직 틀린 문제가 없어요.</p></div>')) +
+            : '<div class="card"><p class="sub">아직 선생님과 푼 퀴즈가 없어요.</p></div>') +
           '<button class="big" data-act="n-exit" style="margin-top:auto">대기실로</button>';
       }
       const set = run.set, total = run.list.length;
       if (run.i >= total) {
         return '<h1>한 바퀴 끝!</h1><div class="card"><p class="sub">이번에 맞힌 문제</p><p class="bignum">' + run.right + ' / ' + total + '</p></div>' +
-          '<p class="sub">이 문제들은 오답노트에 계속 남아 있어요</p>' +
+          '<p class="sub">이 문제들은 여기에 계속 남아 있어요</p>' +
           '<button class="big" data-act="n-again" style="margin-top:auto">한 번 더 풀기</button><button class="ghost" data-act="n-list">목록으로</button>';
       }
       const it = set.items[run.list[run.i]], ch = choicesOf(set, it), done = run.picked != null;
-      return '<div class="row" style="align-items:center"><div class="chip">오답노트 · ' + esc(set.unit) + '</div><div class="sub">' + (run.i + 1) + ' / ' + total + '</div></div>' +
+      return '<div class="row" style="align-items:center"><div class="chip">다시 풀기 · ' + esc(set.unit) + '</div><div class="sub">' + (run.i + 1) + ' / ' + total + '</div></div>' +
         '<div class="card"><p class="qtext">' + markQ(it.q) + '</p><p class="sub" style="margin-top:10px">' + esc(it.ask || set.ask) + '</p></div>' +
         '<div class="choices">' + ch.map((c, i) => '<button class="choice' + (done ? (i === it.a ? ' right' : (i === run.picked ? ' miss' : ' fade')) : '') + '" data-act="n-pick" data-i="' + i + '"' + (done ? ' disabled' : '') + '>' + esc(c) + '</button>').join('') + '</div>' +
         (done ? '<p class="why">' + (run.picked === it.a ? '정답이에요! ' : '') + esc(it.why) + '</p><button class="big" data-act="n-next" style="margin-top:auto">다음</button>'
@@ -108,7 +114,7 @@ const Notes = (function () {
       if (act === 'n-list') { run = null; return 'notes'; }
       if (act === 'n-open') {
         const s = mine(sid).filter(x => x.id === b.dataset.id)[0];
-        if (s && s.wrong.length) run = { set: s.set, list: s.wrong.slice(), i: 0, right: 0, picked: null };
+        if (s && s.wrong.length) { run = { set: s.set, list: s.wrong.slice(), i: 0, right: 0, picked: null }; Daily.logAct(sid, 'retry'); }
       } else if (act === 'n-pick' && run && run.picked == null) {
         run.picked = Number(b.dataset.i);
         if (run.picked === run.set.items[run.list[run.i]].a) { run.right++; Sound.good(); } else Sound.soft();
