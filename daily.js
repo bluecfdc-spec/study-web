@@ -88,6 +88,14 @@ const Daily = (function () {
   function today() { return dateOf(store.now()); }
   function rec(sid) { return (all[sid] || {})[C.id] || {}; }
   function doneToday(sid) { return rec(sid).lastDate === today(); }
+  // 한 번이라도 틀렸던 낱말 전부 (오답노트용, 맞혀도 지워지지 않음)
+  function missedIds(sid) { const r = rec(sid); return Object.keys(Object.assign({}, r.wrong || {}, r.missed || {})).filter(id => byId[id]); }
+  // 오답노트에서 틀렸던 낱말만 다시 풀기. 미션 기록은 바뀌지 않습니다
+  function beginPractice(sid) {
+    const queue = shuffle(missedIds(sid)).map(id => ({ kind: 'q', s: byId[id].s, bi: byId[id].bi, review: true }));
+    S = { queue: queue, i: 0, right: 0, total: queue.length, done: 0, wrong: {}, isNew: false, practice: true, picked: null, opts: null };
+    prep();
+  }
 
   // 오늘 할 분량: 틀렸던 것 복습(최대 8개) + 새 문장. 본문을 다 돌면 복습과 섞은 문제
   function plan(sid) {
@@ -144,12 +152,18 @@ const Daily = (function () {
   return {
     init: function (st, onChange) { store = st; store.on(BASE + '/daily', v => { all = v || {}; onChange(); }); },
     doneToday: doneToday,
+    missed: missedIds,
     lobbyCard: function (sid) {
       const r = rec(sid), n = C.days.length, day = r.day || 0;
       if (doneToday(sid)) return '<button class="d-card" data-act="d-open">오늘의 영어 미션 완료!<small>연속 ' + (r.streak || 1) + '일째 · 내일 또 만나요</small></button>';
       return '<button class="d-card" data-act="d-open">오늘의 영어 미션<small>' + esc(C.title) + ' · ' + (day < n ? (day + 1) + '일째 / ' + n + '일' : '복습 연습') + ' · 3분이면 끝</small></button>';
     },
     html: function (sid) {
+      if (result && result.practice) {
+        return '<h1>한 바퀴 끝!</h1><div class="card"><p class="sub">이번에 맞힌 낱말</p><p class="bignum">' + result.right + ' / ' + result.total + '</p></div>' +
+          '<p class="sub">이 낱말들은 오답노트에 계속 남아 있어요</p>' +
+          '<button class="big" data-act="d-review" style="margin-top:auto">한 번 더 풀기</button><button class="ghost" data-act="n-list">오답노트로</button>';
+      }
       if (result) {
         return '<h1>미션 완료!</h1><div class="card"><p class="sub">오늘 맞힌 문제</p><p class="bignum">' + result.right + ' / ' + result.total + '</p></div>' +
           '<div class="wait">연속 ' + result.streak + '일째예요</div>' +
@@ -174,26 +188,34 @@ const Daily = (function () {
           '<p class="sub">색칠한 낱말을 잘 봐 두세요</p><button class="big" data-act="d-next" style="margin-top:auto">봤어요! 문제 풀기</button>';
       }
       const bl = cur.s.blanks[cur.bi], answered = S.picked != null, ok = S.picked === bl.w;
-      return prog + '<div class="d-tag">' + (cur.review ? '다시 풀기' : '빈칸 채우기') + '</div>' + who +
+      return prog + '<div class="d-tag">' + (S.practice ? '오답노트 · 낱말' : (cur.review ? '다시 풀기' : '빈칸 채우기')) + '</div>' + who +
         '<div class="card"><p class="d-en">' + sentenceHTML(cur.s, 'ask', cur.bi) + '</p><p class="d-ko">' + esc(cur.s.ko) + '</p></div>' +
         '<div class="d-opts">' + S.opts.map((w, i) => '<button class="d-opt' + (answered ? (w === bl.w ? ' ok' : (w === S.picked ? ' no' : '')) : '') + '" data-act="d-pick" data-i="' + i + '"' + (answered ? ' disabled' : '') + '>' + esc(w) + '</button>').join('') + '</div>' +
-        (answered ? '<p class="sub">' + (ok ? '정답이에요!' : '괜찮아요. 내일 한 번 더 만나요') + '</p><button class="big" data-act="d-next" style="margin-top:auto">다음</button>' : '<p class="sub">빈칸에 들어갈 말을 눌러요</p>');
+        (answered ? '<p class="sub">' + (ok ? '정답이에요!' : (S.practice ? '괜찮아요. 오답노트에 남아 있어요' : '괜찮아요. 내일 한 번 더 만나요')) + '</p><button class="big" data-act="d-next" style="margin-top:auto">다음</button>' : '<p class="sub">빈칸에 들어갈 말을 눌러요</p>' + (S.practice ? '<button class="ghost" data-act="n-list" style="margin-top:auto">오답노트로</button>' : ''));
     },
     // 눌린 버튼 처리. 화면을 바꿔야 하면 'daily', 대기실로 가면 'lobby' 를 돌려줍니다
     click: async function (act, b, sid) {
       if (act === 'd-open') { result = null; S = null; return 'daily'; }
       if (act === 'd-exit') { result = null; S = null; return 'lobby'; }
       if (act === 'd-start') { begin(sid); return 'daily'; }
+      if (act === 'd-review') { result = null; S = null; if (missedIds(sid).length) beginPractice(sid); return 'daily'; }
       if (act === 'd-pick' && S && S.picked == null) {
         const cur = S.queue[S.i], bl = cur.s.blanks[cur.bi];
         S.picked = S.opts[Number(b.dataset.i)]; S.done++;
         if (S.picked === bl.w) { S.right++; delete S.wrong[bl.id]; Sound.good(); }
-        else { S.wrong[bl.id] = bl.w; Sound.soft(); }
+        else {
+          S.wrong[bl.id] = bl.w; Sound.soft();
+          const m = {}; m[bl.id] = bl.w;   // 틀린 낱말은 바로 오답노트에 남깁니다
+          store.update(BASE + '/daily/' + sid + '/' + C.id + '/missed', m);
+        }
         return 'daily';
       }
       if (act === 'd-next' && S) {
         S.i++;
-        if (S.i >= S.queue.length) { await finish(sid); Sound.fanfare(); } else prep();
+        if (S.i >= S.queue.length) {
+          if (S.practice) { result = { practice: true, right: S.right, total: S.total }; S = null; } else await finish(sid);
+          Sound.fanfare();
+        } else prep();
         return 'daily';
       }
       return 'daily';

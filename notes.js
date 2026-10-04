@@ -77,16 +77,17 @@ const Notes = (function () {
     },
     stamps: function (sid) { return Stamps.html(sid, daily); },
     lobbyButton: function (sid) {
-      const n = mine(sid).reduce((k, s) => k + s.wrong.length, 0);
+      const n = mine(sid).reduce((k, s) => k + s.wrong.length, 0) + Daily.missed(sid).length;
       return '<button class="n-btn" data-act="n-list">오답노트<small>' + (n ? '다시 풀 문제 ' + n + '개' : '틀린 문제가 생기면 여기에 모여요') + '</small></button>';
     },
     html: function (sid) {
       if (!run) {
-        const list = mine(sid);
+        const list = mine(sid), eng = Daily.missed(sid).length;
         return '<h1>오답노트</h1><p class="sub">틀린 문제는 몇 번이든 다시 풀 수 있어요</p>' +
+          (eng ? '<button class="n-item" data-act="d-review" style="background:var(--yellow)">영어 · ' + esc(DAILY.title) + ' 낱말<small>숙제에서 틀린 낱말 ' + eng + '개</small></button>' : '') +
           (list.length ? list.map(s => '<button class="n-item" data-act="n-open" data-id="' + esc(s.id) + '"' + (s.wrong.length ? '' : ' disabled') + '>' +
             esc(s.set.subject) + ' · ' + esc(s.set.unit) + '<small>' + dayText(s.at) + ' · ' + (s.wrong.length ? '틀린 문제 ' + s.wrong.length + '개' : '다 맞혔어요!') + '</small></button>').join('')
-            : '<div class="card"><p class="sub">아직 선생님과 푼 퀴즈가 없어요.</p></div>') +
+            : (eng ? '' : '<div class="card"><p class="sub">아직 틀린 문제가 없어요.</p></div>')) +
           '<button class="big" data-act="n-exit" style="margin-top:auto">대기실로</button>';
       }
       const set = run.set, total = run.list.length;
