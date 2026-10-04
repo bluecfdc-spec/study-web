@@ -46,7 +46,18 @@ document.head.insertAdjacentHTML('beforeend', '<style>' +
   '.lz-card{flex:1 1 150px;max-width:230px;background:#fff;border-radius:28px;padding:3vh 1.5vw;text-align:center;font-size:clamp(24px,3.6vw,52px);white-space:nowrap;border:6px solid transparent}' +
   '.lz-card small{display:block;font-size:.4em;color:var(--sub);margin-top:.6vh}' +
   '.lz-card.ok{background:var(--mint)}.lz-card.odd{background:var(--yellow);border-color:var(--ink)}' +
-  '.go.plain{background:#FBEDE8}.lz-btns{display:flex;gap:12px}</style>');
+  '.go.plain{background:#FBEDE8}.lz-btns{display:flex;gap:12px}' +
+  '.ox{border-collapse:collapse;margin:0 auto;font-size:clamp(16px,2vw,26px)}.ox th{color:var(--sub);font-weight:400;padding:.3em}' +
+  '.ox td{padding:.3em;text-align:center}.ox .who{display:flex;align-items:center;gap:.5em;text-align:left;padding-right:1em;white-space:nowrap}' +
+  '.ox .sum{padding-left:1em;white-space:nowrap}.oxm{display:inline-flex;width:1.7em;height:1.7em;border-radius:50%;align-items:center;justify-content:center}' +
+  '.oxm.o{background:var(--mint);color:#1F5C45}.oxm.x{background:var(--pink);color:#9C2748}.oxm.n{background:#F1E2DE;color:var(--sub)}</style>');
+
+function oxMark(v) { return v == null ? '<span class="oxm n">-</span>' : (v ? '<span class="oxm o">O</span>' : '<span class="oxm x">X</span>'); }
+// 지금까지의 퀴즈를 학습 기록으로 남깁니다 (오답노트가 이 기록을 봅니다)
+async function saveSession() {
+  if (!live || !SETS[live.setId] || !live.answers) return;
+  await store.set(BASE + '/sessions/' + live.sessionId, Object.assign({}, live, { endedAt: store.now() }));
+}
 
 const ICONS = {
   person: () => avatarSVG({ hair: HAIRS[0], style: 2 }, 96),
@@ -129,9 +140,11 @@ function render() {
   const top = '<div class="top"><div class="chip">' + esc(set.subject) + ' · ' + esc(set.unit) + '</div><div class="sub">문제 ' + (qi + 1) + ' / ' + n + '</div></div>';
   const stop = '<button class="quiet" data-act="stop">수업 끝내기</button>';
   if (live.phase === 'end') {
-    const team = ids.reduce((s, id) => s + correctCount(live, set, id), 0);
-    app.innerHTML = '<h1>끝! 모두 수고했어요</h1>' + seats(id => ({ text: n + '문제 중 ' + correctCount(live, set, id) + '개', good: true })) +
-      '<div class="team">우리 팀이 함께 맞힌 문제 ' + team + '개</div>' +
+    app.innerHTML = '<h1>끝! 모두 수고했어요</h1><div class="card" style="overflow-x:auto"><table class="ox"><tr><th></th>' +
+      set.items.map((x, i) => '<th>' + (i + 1) + '</th>').join('') + '<th>맞힌 수</th></tr>' +
+      ids.map(id => '<tr><td class="who">' + avatarSVG(students[id].avatar, 56) + '<span>' + esc(students[id].name) + '</span></td>' +
+        set.items.map((x, i) => { const a = answerOf(live, i, id); return '<td>' + oxMark(a == null ? null : a === x.a) + '</td>'; }).join('') +
+        '<td class="sum">' + correctCount(live, set, id) + ' / ' + n + '</td></tr>').join('') + '</table></div>' +
       '<div class="bar"><span></span><button class="go" data-act="stop">대기실로</button></div>';
     return;
   }
@@ -169,11 +182,11 @@ app.addEventListener('click', async e => {
     const set = SETS[live.setId];
     if (live.q + 1 < set.items.length) await store.update(BASE + '/live', { q: live.q + 1, phase: 'question', endsAt: null });
     else {
-      const rec = Object.assign({}, live, { phase: 'end', endedAt: store.now() });
-      await store.set(BASE + '/sessions/' + live.sessionId, rec);   // 학습 기록으로 남김
+      await saveSession();
       await store.update(BASE + '/live', { phase: 'end' });
     }
   } else if (act === 'stop') {
+    await saveSession();   // 중간에 끝내도 푼 데까지는 기록
     await store.remove(BASE + '/live');
   }
 });

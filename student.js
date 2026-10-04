@@ -23,6 +23,7 @@ store.on(BASE + '/live', v => {
   lastCue = cue;
 });
 Daily.init(store, () => { if (screen === 'lobby') render(); });
+Notes.init(store, () => { if (screen === 'lobby' || screen === 'notes') render(); });
 function sync() { if (me && (screen === 'lobby' || screen === 'quiz')) screen = (live && SETS[live.setId]) ? 'quiz' : 'lobby'; }
 setInterval(() => {
   if (screen !== 'quiz' || !live || live.phase !== 'count') return;
@@ -35,10 +36,8 @@ function quizHTML() {
   const set = SETS[live.setId], n = set.items.length, qi = live.q, it = set.items[qi];
   const top = '<div class="row" style="align-items:center"><div class="chip">' + esc(set.subject) + ' · ' + esc(set.unit) + '</div><div class="sub">문제 ' + (qi + 1) + ' / ' + n + '</div></div>';
   if (live.phase === 'end') {
-    const ids = Object.keys(students);
-    const team = ids.reduce((s, id) => s + correctCount(live, set, id), 0);
     return '<h1>끝! 수고했어요</h1><div class="card"><p class="sub">내가 맞힌 문제</p><p class="bignum">' + correctCount(live, set, me) + ' / ' + n + '</p></div>' +
-      '<div class="wait">우리 팀이 함께 맞힌 문제<br>' + team + '개</div><p class="sub">선생님 화면을 같이 봐요</p>';
+      '<div class="card">' + oxRow(live, set, me) + '</div><p class="sub">틀린 문제는 오답노트에서 다시 풀 수 있어요</p>';
   }
   const mine = answerOf(live, qi, me), ch = choicesOf(set, it);
   if (live.phase === 'reveal') {
@@ -98,17 +97,19 @@ function render() {
       '<button class="big" data-act="saveAvatar">완성!</button>';
   } else if (screen === 'daily') {
     h = Daily.html(me);
+  } else if (screen === 'notes') {
+    h = Notes.html(me);
   } else if (screen === 'quiz') {
     h = quizHTML();
   } else if (screen === 'lobby') {
     const ids = Object.keys(students);
-    h = '<h1>대기실</h1><p class="sub">' + esc(students[me].name) + ', 어서 와요</p>' +
-      '<div class="card"><div class="lobby">' + ids.map(id => {
+    // 친구들은 위에 작게, 그 아래에 도장판과 큰 버튼들
+    h = '<div class="lb-friends">' + ids.map(id => {
         const on = !!presence[id] || id === me;
-        return '<div class="seat ' + (on ? 'on' : 'off') + '">' + avatarSVG(students[id].avatar, 84) + '<div>' + esc(students[id].name) + (id === me ? ' (나)' : '') + '</div><div class="state">' + (Daily.doneToday(id) ? '미션 완료' : (on ? '들어왔어요' : '아직이에요')) + '</div></div>';
-      }).join('') + '</div></div>' +
-      Daily.lobbyCard(me) +
-      '<div class="wait">선생님이 시작하면<br>여기에 퀴즈가 열려요</div>' +
+        return '<div class="lb-f' + (on ? '' : ' off') + '">' + avatarSVG(students[id].avatar, 46) + '<div><div>' + esc(students[id].name) + (id === me ? ' (나)' : '') + '</div>' +
+          '<div class="lb-s">' + (on ? '접속 중' : '없음') + (Daily.doneToday(id) ? ' · 미션 완료' : '') + '</div></div></div>';
+      }).join('') + '</div>' +
+      Notes.stamps(me) + Daily.lobbyCard(me) + Notes.lobbyButton(me) +
       '<div class="row" style="margin-top:auto"><button class="ghost" data-act="editAvatar">캐릭터 바꾸기</button><button class="ghost" data-act="logout">나가기</button></div>';
   }
   app.innerHTML = mock + h;
@@ -118,9 +119,9 @@ app.addEventListener('click', async e => {
   const b = e.target.closest('button[data-act]');
   if (!b) return;
   const act = b.dataset.act;
-  if (act !== 'd-pick') Sound.tap();
-  if (act.indexOf('d-') === 0) {   // 오늘의 영어 미션 버튼
-    screen = await Daily.click(act, b, me);
+  if (act !== 'd-pick' && act !== 'n-pick') Sound.tap();
+  if (act.indexOf('d-') === 0 || act.indexOf('n-') === 0) {   // 오늘의 영어 미션, 오답노트 버튼
+    screen = act.indexOf('d-') === 0 ? await Daily.click(act, b, me) : await Notes.click(act, b, me);
     if (screen === 'lobby') sync();
     render(); return;
   }
