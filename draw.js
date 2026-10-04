@@ -4,6 +4,8 @@
   const COLORS = ['#E5484D', '#3B6FE0', '#4A3B47'];   // 빨강, 파랑, 진한 색
   let tool = 'off', colorI = 0, drawing = false, last = null, moved = 0, downAt = null;
   let trail = [];   // 레이저 점들 {x, y, t, gap}
+  let folded = local('sw_draw_fold') === '1', pos = null;   // 도구 막대: 접기, 옮긴 자리
+  try { pos = JSON.parse(local('sw_draw_pos') || 'null'); } catch (e) { }
 
   document.head.insertAdjacentHTML('beforeend', '<style>' +
     '.dr-c{position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:20;pointer-events:none;touch-action:none}' +
@@ -11,6 +13,7 @@
     '.dr-bar{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:21;display:flex;flex-direction:column;gap:8px;background:rgba(255,255,255,.82);border-radius:999px;padding:8px 6px;box-shadow:0 1px 6px rgba(74,59,71,.16)}' +
     '.dr-b{width:44px;height:44px;padding:0;border:3px solid transparent;border-radius:50%;background:transparent;color:#8E7783;display:flex;align-items:center;justify-content:center;cursor:pointer}' +
     '.dr-b svg{width:24px;height:24px}.dr-b.on{background:#FFE39A;border-color:#4A3B47;color:#4A3B47}' +
+    '.dr-grip{cursor:grab;touch-action:none;height:26px;color:#C9BCC2}.dr-grip svg{width:20px;height:20px}.dr-fold{height:30px}.dr-fold svg{width:18px;height:18px}' +
     '.dr-dot{width:14px;height:14px;border-radius:50%;border:2px solid #fff;position:absolute;right:4px;bottom:4px}.dr-b{position:relative}</style>');
 
   const ink = document.createElement('canvas'), las = document.createElement('canvas');
@@ -32,26 +35,50 @@
     pen: S('<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 013 3L8 19l-4 1z"/><path d="M14.5 6.5l3 3"/>'),
     laser: S('<circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>'),
     erase: S('<path d="M8 19l-4.5-4.5a1.5 1.5 0 010-2.1L12 4a1.5 1.5 0 012.1 0l5.4 5.4a1.5 1.5 0 010 2.1L12 19H8z"/><path d="M8.5 7.5l7 7M12 19h8"/>'),
-    clear: S('<path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v5M14 11v5"/>')
+    clear: S('<path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v5M14 11v5"/>'),
+    grip: S('<circle cx="9" cy="7" r="1.3" fill="currentColor"/><circle cx="15" cy="7" r="1.3" fill="currentColor"/><circle cx="9" cy="12" r="1.3" fill="currentColor"/><circle cx="15" cy="12" r="1.3" fill="currentColor"/><circle cx="9" cy="17" r="1.3" fill="currentColor"/><circle cx="15" cy="17" r="1.3" fill="currentColor"/>'),
+    up: S('<path d="M6 15l6-6 6 6"/>'), down: S('<path d="M6 9l6 6 6-6"/>')
   };
   const NAME = { off: '터치 (필기 끄기)', pen: '펜 (한 번 더 누르면 색 바꾸기)', laser: '레이저 포인터', erase: '지우개', clear: '전부 지우기' };
   const bar = document.createElement('div');
   bar.className = 'dr-bar';
   document.body.appendChild(bar);
   function drawBar() {
-    bar.innerHTML = ['off', 'pen', 'laser', 'erase', 'clear'].map(t =>
+    bar.innerHTML = '<div class="dr-b dr-grip" data-grip="1" title="끌어서 옮기기" aria-label="끌어서 옮기기">' + ICON.grip + '</div>' + (folded ? [] : ['off', 'pen', 'laser', 'erase', 'clear']).map(t =>
       '<button type="button" class="dr-b' + (tool === t ? ' on' : '') + '" data-t="' + t + '" aria-label="' + NAME[t] + '" title="' + NAME[t] + '">' + ICON[t] +
-      (t === 'pen' ? '<span class="dr-dot" style="background:' + COLORS[colorI] + '"></span>' : '') + '</button>').join('');
+      (t === 'pen' ? '<span class="dr-dot" style="background:' + COLORS[colorI] + '"></span>' : '') + '</button>').join('') +
+      '<button type="button" class="dr-b dr-fold" data-t="fold" aria-label="' + (folded ? '도구 펴기' : '도구 접기') + '" title="' + (folded ? '도구 펴기' : '도구 접기') + '">' + (folded ? ICON.down : ICON.up) + '</button>';
+    place();
     document.body.classList.toggle('dr-on', tool !== 'off');
     ink.style.cursor = tool === 'off' ? '' : 'crosshair';
   }
   bar.addEventListener('click', e => {
     const b = e.target.closest('.dr-b'); if (!b) return;
     const t = b.dataset.t;
+    if (t === 'fold') { folded = !folded; local('sw_draw_fold', folded ? '1' : '0'); drawBar(); return; }
     if (t === 'clear') { clearInk(); trail = []; return; }
     if (t === 'pen' && tool === 'pen') colorI = (colorI + 1) % COLORS.length;
     tool = t; drawBar();
   });
+  // 막대 자리: 옮긴 적이 있으면 그 자리(화면 밖으로 나가지 않게), 없으면 오른쪽 가운데
+  function place() {
+    if (!pos) return;
+    const w = bar.offsetWidth || 56, h = bar.offsetHeight || 60;
+    const x = Math.max(4, Math.min(window.innerWidth - w - 4, pos.x)), y = Math.max(4, Math.min(window.innerHeight - h - 4, pos.y));
+    bar.style.right = 'auto'; bar.style.transform = 'none'; bar.style.left = x + 'px'; bar.style.top = y + 'px';
+  }
+  window.addEventListener('resize', place);
+  let grab = null;
+  bar.addEventListener('pointerdown', e => {
+    if (!e.target.closest('[data-grip]')) return;
+    e.preventDefault();
+    const r = bar.getBoundingClientRect();
+    grab = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+    try { bar.setPointerCapture(e.pointerId); } catch (err) { }
+  });
+  bar.addEventListener('pointermove', e => { if (!grab) return; pos = { x: e.clientX - grab.dx, y: e.clientY - grab.dy }; place(); });
+  const drop = () => { if (grab) { grab = null; if (pos) local('sw_draw_pos', JSON.stringify(pos)); } };
+  bar.addEventListener('pointerup', drop); bar.addEventListener('pointercancel', drop);
   drawBar();
 
   function seg(a, b) {
