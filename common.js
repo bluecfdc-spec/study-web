@@ -135,21 +135,24 @@ const Sound = (function () {
     } catch (e) { return null; }
     return ctx;
   }
-  function tone(f, t0, dur, vol, type) {
+  // 소리 장치가 아직 잠들어 있으면(아이폰·아이패드) 깨운 뒤에 소리를 냅니다
+  function ready(fn) {
     const c = ac(); if (!c) return;
+    if (c.state === 'running') fn(c); else c.resume().then(() => fn(c)).catch(() => { });
+  }
+  function tone(f, t0, dur, vol, type) { ready(c => {
     const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
     o.type = type || 'sine'; o.frequency.value = f;
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + 0.05);
-  }
+  }); }
   function bell(f, t0, vol) { tone(f, t0, 0.9, vol); tone(f * 2, t0, 0.5, vol * 0.35); tone(f * 3, t0, 0.25, vol * 0.15); }
-  ['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => ac(), { passive: true }));
+  ['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => window.addEventListener(ev, () => ac(), { passive: true }));
   return {
     // 버튼 소리: 스페이스 서바이버의 메뉴 선택음과 같은 맑은 종소리 두 음 (띠-룽)
-    tap: () => {
-      const c = ac(); if (!c) return;
+    tap: () => ready(c => {
       const t = c.currentTime, f = m => 440 * Math.pow(2, (m - 69) / 12);
       [[88, 0], [95, 0.09]].forEach(q => [[0, 0.16, 'sine'], [12, 0.05, 'sine'], [19, 0.025, 'triangle']].forEach(h => {
         const o = c.createOscillator(), g = c.createGain(), st = t + q[1];
@@ -159,11 +162,45 @@ const Sound = (function () {
         g.gain.exponentialRampToValueAtTime(0.0001, st + 0.75);
         o.connect(g); g.connect(c.destination); o.start(st); o.stop(st + 0.8);
       }));
-    },
+    }),
     tick: () => tone(880, 0, 0.14, 0.25),
     dingdong: () => { bell(1318.5, 0, 0.3); bell(1046.5, 0.28, 0.3); },
     good: () => { bell(1046.5, 0, 0.25); bell(1318.5, 0.12, 0.25); bell(1568, 0.24, 0.3); },
     soft: () => { tone(523.3, 0, 0.35, 0.2); tone(440, 0.18, 0.45, 0.2); },
     fanfare: () => [1046.5, 1318.5, 1568, 2093].forEach((f, i) => bell(f, i * 0.15, 0.28))
   };
+})();
+
+// ----- 화면 맞춤: 두 번 터치 확대 막기 + 내용을 한 화면에 딱 맞추기 -----
+(function () {
+  const vp = document.querySelector('meta[name=viewport]');
+  if (vp) vp.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
+  document.head.insertAdjacentHTML('beforeend', '<style>html,body,button,a{touch-action:manipulation}body{overscroll-behavior:none}</style>');
+  document.addEventListener('dblclick', e => e.preventDefault());
+  document.addEventListener('gesturestart', e => e.preventDefault());
+  // 수업 화면에서 키보드(화살표·스페이스)로 넘길 때도 버튼과 같은 소리
+  document.addEventListener('keydown', e => { if (typeof lessonMove === 'function' && ['ArrowRight', 'ArrowLeft', ' '].includes(e.key)) Sound.tap(); });
+
+  // 학생 화면과 수업 화면(<main id="app">)만 맞춥니다. 선생님 포털은 길어지면 스크롤합니다
+  const app = document.getElementById('app');
+  if (!app || app.tagName !== 'MAIN') return;
+  let queued = false;
+  function fit() {
+    queued = false;
+    const H = window.innerHeight;
+    let z = 1;
+    app.style.zoom = ''; app.style.minHeight = H + 'px';
+    for (let i = 0; i < 3; i++) {
+      const h = app.getBoundingClientRect().height;
+      if (h <= H + 1) break;
+      z *= H / h;
+      app.style.zoom = z; app.style.minHeight = (H / z) + 'px';
+    }
+  }
+  function ask() { if (!queued) { queued = true; requestAnimationFrame(fit); } }
+  new MutationObserver(ask).observe(app, { childList: true, subtree: true });
+  window.addEventListener('resize', ask);
+  window.addEventListener('load', ask);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(ask);
+  ask();
 })();
