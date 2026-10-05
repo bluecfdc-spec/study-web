@@ -2,6 +2,7 @@
 // 저장 위치 (학생별 영어 미션 기록 아래)
 //   known/{단어} = { w, at, n(뺄 때까지 틀린 횟수), ok(확인 시험 통과한 때) }
 //   fail/{단어}  = 확인 시험에서 틀린 때   ·   check = 선생님이 보낸 시험   ·   checkLog = 시험 기록
+//   pre/{단어}   = { w, at } 아이가 예습 단어장에서 미리 담은 단어 (틀린 적이 없어도 단어장에 올라옵니다)
 // 외웠다고 뺀 뒤에 숙제·수업 시험에서 또 틀리면(틀린 횟수가 늘면) 단어장으로 저절로 돌아옵니다.
 (function () {
   if (typeof DAILY === 'undefined' || typeof Daily === 'undefined' || typeof store === 'undefined') return;
@@ -12,10 +13,13 @@
   const rec = sid => (D[sid] || {})[DAILY.id] || {};
   const key = w => String(w).toLowerCase().replace(/[^a-z0-9]+/g, '_');
   function split(sid) {
-    const r = rec(sid), kn = r.known || {}, fail = r.fail || {}, study = [], known = [];
-    Daily.words(sid).forEach(o => {
+    const r = rec(sid), kn = r.known || {}, fail = r.fail || {}, pre = r.pre || {}, study = [], known = [];
+    const list = Daily.words(sid), have = {};
+    list.forEach(o => { have[key(o.w)] = 1; });
+    Object.keys(pre).forEach(k => { const w = pre[k] && pre[k].w; if (w && !have[k] && Daily.gloss(w)) list.push({ w: w, n: 0, still: false, ko: Daily.gloss(w) }); });   // 예습으로만 담은 단어 (틀린 횟수 0)
+    list.forEach(o => {
       const k = key(o.w), kk = kn[k];
-      o.k = k;
+      o.k = k; o.pre = !!pre[k];
       if (kk && o.n <= (kk.n || 0)) { o.at = kk.at; o.ok = kk.ok; known.push(o); }
       else { o.fail = !!fail[k]; o.again = !!kk; study.push(o); }
     });
@@ -30,8 +34,8 @@
     const chip = (o, cls, extra) => '<span class="hw-w' + cls + '"><b>' + esc(o.w) + '</b> ' + esc(o.ko) + (o.n > 1 ? ' <i>' + o.n + '번</i>' : '') + (extra || '') + '</span>';
     function section(id) {
       const sp = split(id), r = rec(id), pend = pending(id);
-      let h = '<h3>단어장에 남아 있는 단어 <small>아직 못 외운 단어 ' + sp.study.length + '개 · 많이 틀린 순</small></h3>' +
-        (sp.study.length ? '<div class="hw-words">' + sp.study.map(o => chip(o, o.still ? ' still' : '', o.fail ? '<em>확인 시험에서 틀림</em>' : (o.again ? '<em>뺐다가 또 틀림</em>' : ''))).join('') + '</div>' +
+      let h = '<h3>단어장에 남아 있는 단어 <small>아직 못 외운 단어 ' + sp.study.length + '개 · 많이 틀린 순 (예습으로 담은 단어 포함)</small></h3>' +
+        (sp.study.length ? '<div class="hw-words">' + sp.study.map(o => chip(o, o.still ? ' still' : '', o.fail ? '<em>확인 시험에서 틀림</em>' : (o.again && o.n ? '<em>뺐다가 또 틀림</em>' : (o.n ? (o.pre ? '<em>예습 + 틀림</em>' : '') : '<em>예습으로 담음</em>')))).join('') + '</div>' +
           '<p class="hint" style="font-size:13px">분홍색 = 마지막 숙제에서도 틀려서 다음 숙제에 다시 나오는 단어</p>' : '<p class="hint">남아 있는 단어 없음</p>');
       h += '<h3>외웠다고 뺀 단어 <small>' + sp.known.length + '개 · 초록색 = 확인 시험 통과</small></h3>' +
         (sp.known.length ? '<div class="hw-words">' + sp.known.map(o => chip(o, o.ok ? ' ok' : '', o.ok ? '<em>확인됨</em>' : '')).join('') + '</div>' : '<p class="hint">아직 없음</p>');
@@ -73,21 +77,48 @@
   // ================= 학생 폰 =================
   if (typeof me === 'undefined') return;
   document.head.insertAdjacentHTML('beforeend', '<style>.wb-b{flex:none;min-height:36px;border-radius:999px;padding:0 12px;font-size:14px;font-weight:700;background:#FBEDE8;color:var(--sub)}.wb-b.go{background:var(--mint);color:var(--ink)}' +
-    '.w-list.wb{max-height:44vh}.w-row .wb-ok{background:var(--mint)}.wb-tabs button{min-height:48px}.d-prog div:first-child{padding-right:84px}.wb-ko{font-family:system-ui,-apple-system,"Malgun Gothic",sans-serif;font-size:30px;font-weight:700;text-align:center;line-height:1.4}</style>');
+    '.w-list.wb{max-height:44vh}.wb-tabs{grid-template-columns:1fr 1fr 1fr !important;gap:6px !important}.wb-tabs button{font-size:15px !important;padding:0 4px;line-height:1.25}.w-row .wb-pre{background:var(--yellow)}.wb-day{padding:12px 0 4px;font-size:14px;font-weight:700;color:var(--sub);border-top:1px solid #F1E2DE}.wb-day:first-child{border-top:none;padding-top:6px}.wb-b.in{background:var(--yellow);color:var(--ink)}.lb-card.c-yellow{background:var(--yellow)}.w-row .wb-ok{background:var(--mint)}.wb-tabs button{min-height:48px}.d-prog div:first-child{padding-right:84px}.wb-ko{font-family:system-ui,-apple-system,"Malgun Gothic",sans-serif;font-size:30px;font-weight:700;text-align:center;line-height:1.4}</style>');
   const SPK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 9a4.5 4.5 0 010 6"/></svg>';
   let tab = 'study', hide = '', inWords = false, T = null;
 
+  // 예습 단어장: 이번 과(Lesson 5)에 나오는 단어 전부를 숙제 날짜 순서로
+  const PRE = [];
+  (function () {
+    const seen = {};
+    DAILY.days.forEach((d, di) => d.s.forEach(x => x.en.replace(/\{([^}|]+)/g, (m, w) => {
+      const k = key(w);
+      if (!seen[k] && Daily.gloss(w)) { seen[k] = 1; PRE.push({ w: w, k: k, ko: Daily.gloss(w), day: di + 1 }); }
+      return m;
+    })));
+  })();
+  function preHTML(sp) {
+    const st = {}; sp.study.forEach(o => { st[o.k] = o; });
+    const kn = {}; sp.known.forEach(o => { kn[o.k] = o; });
+    let day = 0;
+    return '<p class="sub" style="font-size:15px">' + esc(DAILY.title) + '에 나오는 단어 ' + PRE.length + '개 · 미리 외울 단어를 단어장에 담아요</p>' +
+      '<div class="w-list wb' + (hide ? ' hide-' + hide : '') + '">' + PRE.map(o => {
+        const head = o.day !== day ? '<div class="wb-day">' + (day = o.day) + '일째 숙제에 나오는 단어</div>' : '';
+        const s = st[o.k], btn = kn[o.k] ? '<i class="wb-ok">외운 단어</i>'
+          : s ? (s.n ? '<i>틀린 단어</i>' : '<button class="wb-b in" data-act="d-preoff" data-k="' + o.k + '">담았어요 ✓</button>')
+            : '<button class="wb-b go" data-act="d-preon" data-k="' + o.k + '">단어장에 담기</button>';
+        return head + '<div class="w-row"><button class="w-say" type="button" data-say="' + esc(o.w) + '" aria-label="발음 듣기">' + SPK + '</button><b class="d-en" style="line-height:1.3">' + esc(o.w) + '</b><span>' + esc(o.ko) + '</span>' + btn + '</div>';
+      }).join('') + '</div>' +
+      '<div class="w-tog"><button class="' + (hide === 'ko' ? 'on' : '') + '" data-act="d-hide" data-h="ko">' + (hide === 'ko' ? '뜻 다시 보기' : '뜻 가리고 보기') + '</button>' +
+      '<button class="' + (hide === 'en' ? 'on' : '') + '" data-act="d-hide" data-h="en">' + (hide === 'en' ? '영어 다시 보기' : '영어 가리고 보기') + '</button></div>';
+  }
   function wordsHTML(sid) {
     const sp = split(sid), list = tab === 'known' ? sp.known : sp.study;
     let h = '<h1>단어장</h1><div class="w-tog wb-tabs"><button class="' + (tab === 'study' ? 'on' : '') + '" data-act="d-tab" data-t="study">공부할 단어 ' + sp.study.length + '</button>' +
-      '<button class="' + (tab === 'known' ? 'on' : '') + '" data-act="d-tab" data-t="known">외운 단어 ' + sp.known.length + '</button></div>';
-    if (!list.length) {
-      h += '<div class="card"><p class="sub">' + (tab === 'known' ? '다 외운 단어는 ‘외웠어요’를 눌러 여기로 옮겨요.' : (sp.known.length ? '공부할 단어를 모두 외웠어요. 대단해요!' : '영어 미션에서 틀린 단어가 생기면 여기에 모여요.')) + '</p></div>';
+      '<button class="' + (tab === 'known' ? 'on' : '') + '" data-act="d-tab" data-t="known">외운 단어 ' + sp.known.length + '</button>' +
+      '<button class="' + (tab === 'pre' ? 'on' : '') + '" data-act="d-tab" data-t="pre">예습 단어 ' + PRE.length + '</button></div>';
+    if (tab === 'pre') h += preHTML(sp);
+    else if (!list.length) {
+      h += '<div class="card"><p class="sub">' + (tab === 'known' ? '다 외운 단어는 ‘외웠어요’를 눌러 여기로 옮겨요.' : (sp.known.length ? '공부할 단어를 모두 외웠어요. 대단해요!' : '영어 미션에서 틀린 단어와, ‘예습 단어’에서 담은 단어가 여기에 모여요.')) + '</p></div>';
     } else {
       h += '<div class="w-list wb' + (hide ? ' hide-' + hide : '') + '">' + list.map(o =>
         '<div class="w-row"><button class="w-say" type="button" data-say="' + esc(o.w) + '" aria-label="발음 듣기">' + SPK + '</button><b class="d-en" style="line-height:1.3">' + esc(o.w) + '</b><span>' + esc(o.ko) + '</span>' +
         (tab === 'known' ? (o.ok ? '<i class="wb-ok">확인 완료</i>' : '') + '<button class="wb-b" data-act="d-unknown" data-k="' + o.k + '">다시 공부</button>'
-          : '<button class="wb-b go" data-act="d-known" data-k="' + o.k + '">외웠어요</button>') + '</div>').join('') + '</div>' +
+          : (o.pre ? '<i class="wb-pre">' + (o.n ? '예습·틀림' : '예습') + '</i>' : '') + '<button class="wb-b go" data-act="d-known" data-k="' + o.k + '">외웠어요</button>') + '</div>').join('') + '</div>' +
         '<div class="w-tog"><button class="' + (hide === 'ko' ? 'on' : '') + '" data-act="d-hide" data-h="ko">' + (hide === 'ko' ? '뜻 다시 보기' : '뜻 가리고 보기') + '</button>' +
         '<button class="' + (hide === 'en' ? 'on' : '') + '" data-act="d-hide" data-h="en">' + (hide === 'en' ? '영어 다시 보기' : '영어 가리고 보기') + '</button></div>';
     }
@@ -111,6 +142,12 @@
       }
       return 'daily';
     }
+    if (act === 'd-preon' || act === 'd-preoff') {
+      const o = PRE.filter(x => x.k === b.dataset.k)[0], up = {};
+      if (o) { up['pre/' + o.k] = act === 'd-preon' ? { w: o.w, at: store.now() } : null; store.update(P(sid), up); }
+      return 'daily';
+    }
+    if (act === 'd-pre') { const r = await click0('d-words', b, sid); tab = 'pre'; hide = ''; return r; }   // 대기실의 '예습 단어장' 버튼
     if (act === 'd-words') { tab = 'study'; hide = ''; }
     return click0(act, b, sid);
   };
@@ -178,6 +215,12 @@
     if (me && T && screen === 'check') { app.innerHTML = checkHTML(); return; }
     if (me && !T && pending(me) && (screen === 'lobby' || (screen === 'daily' && inWords)) && startCheck()) { app.innerHTML = checkHTML(); return; }
     draw();
+    // 대기실: '틀린 단어 단어장' 바로 아래에 '예습 단어장' 버튼을 붙입니다
+    const wb = app.querySelector('.lb-card[data-act="d-words"]');
+    if (wb && !app.querySelector('[data-act="d-pre"]')) {
+      const n = Object.keys(rec(me).pre || {}).length;
+      wb.insertAdjacentHTML('afterend', '<button class="lb-card c-yellow" data-art="obj_pencil" data-act="d-pre">예습 단어장<small>' + esc(DAILY.title) + ' 단어 ' + PRE.length + '개 · ' + (n ? '내가 담은 단어 ' + n + '개' : '미리 외우기') + '</small></button>');
+    }
   };
   store.on(BASE + '/daily', v => {
     D = v || {};
