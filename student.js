@@ -69,7 +69,7 @@ function openAvatar() {
 
 function render() {
   if (!loaded) return;
-  const mock = MOCK ? '<div class="mock">연습용 화면입니다. 저장되지 않아요.</div>' : '';
+  const mock = MOCK ? '<div class="mock">연습용 화면입니다. 저장되지 않아요.<br>비밀번호는 아무 숫자 4개나 눌러도 됩니다.</div>' : '';
   let h = '';
   if (screen === 'names') {
     const ids = Object.keys(students);
