@@ -25,8 +25,16 @@ h1{margin:0;font-size:clamp(30px,6vw,44px);font-weight:800;line-height:1.2}
 .card ol{margin:0;padding-left:1.2em;font-size:15px;line-height:1.75;color:var(--sub)}
 .card b{color:var(--ink)}
 .num{align-self:flex-start;font-size:13px;font-weight:800;background:var(--yellow);border-radius:999px;padding:4px 12px}
-a.go{margin-top:auto;display:flex;align-items:center;justify-content:center;min-height:54px;border-radius:16px;background:var(--pink2);color:#3A2230;font-size:17px;font-weight:800;text-decoration:none}
-a.go:focus-visible,button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.go{margin-top:auto;display:flex;align-items:center;justify-content:center;min-height:54px;border-radius:16px;background:var(--pink2);color:#3A2230;font-size:17px;font-weight:800;text-decoration:none;width:100%}
+#view{position:fixed;inset:0;z-index:20;display:none;flex-direction:column;background:#2B2230}
+#view.on{display:flex}
+#bar{flex:none;display:flex;align-items:center;gap:12px;padding:8px 12px;background:#FFFDFA;border-bottom:1px solid var(--line)}
+#bar b{flex:1;min-width:0;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bar button{min-height:42px;background:var(--pink2);color:#3A2230}
+#bar a{font-size:14px;color:var(--sub);white-space:nowrap}
+#frame{flex:1;min-height:0;width:100%;border:0;background:#FFF4EE;align-self:center}
+#frame.phone{max-width:460px}
+button:focus-visible,a:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 .note{background:rgba(255,255,255,.9);border-radius:20px;padding:18px 22px;font-size:15px;line-height:1.7;color:var(--sub)}
 .note b{color:var(--ink)}
 .reset{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
@@ -52,17 +60,17 @@ button{font:inherit;font-weight:700;color:var(--ink);cursor:pointer;border:none;
         <li><b>오늘의 영어 미션</b>으로 매일 숙제를 합니다.</li>
         <li><b>단어장</b>에서 틀린 단어를 듣고, 가리고, ‘외웠어요’로 정리합니다.</li>
       </ol>
-      <a class="go" href="index.html?mock" target="_blank" rel="noopener">학생 화면 열기</a>
+      <button class="go" type="button" data-open="index.html?mock" data-title="학생 화면">학생 화면 열기</button>
     </section>
     <section class="card">
       <span class="num">2 · 선생님</span>
       <h2>선생님 포털</h2>
       <ol>
-        <li>왼쪽 <b>숙제 현황</b>을 누릅니다.</li>
+        <li><b>숙제 현황</b>이 바로 열립니다.</li>
         <li>아이별 숙제 결과, 남은 단어, 외웠다고 뺀 단어를 봅니다.</li>
         <li><b>확인 시험 보내기</b>를 누르면 아이 휴대폰에 시험이 바로 뜹니다.</li>
       </ol>
-      <a class="go" href="teacher.html?mock" target="_blank" rel="noopener">선생님 포털 열기</a>
+      <button class="go" type="button" data-open="teacher.html?mock" data-title="선생님 포털">선생님 포털 열기</button>
     </section>
     <section class="card">
       <span class="num">3 · 교실 큰 화면</span>
@@ -72,12 +80,12 @@ button{font:inherit;font-weight:700;color:var(--ink);cursor:pointer;border:none;
         <li>오른쪽 <b>문제 풀이</b>를 시작하면 아이들 휴대폰에 같은 문제가 뜹니다.</li>
         <li>수학 ‘각’, 과학 ‘물질의 상태’를 추천합니다.</li>
       </ol>
-      <a class="go" href="stage.html?mock" target="_blank" rel="noopener">수업 화면 열기</a>
+      <button class="go" type="button" data-open="stage.html?mock" data-title="수업 화면">수업 화면 열기</button>
     </section>
   </div>
 
   <div class="note">
-    <b>함께 움직이는 모습을 보려면</b> 컴퓨터에서 학생 화면과 선생님 포털(또는 수업 화면)을 창 두 개로 나란히 열어 보세요. 한쪽에서 누르면 다른 쪽이 바로 바뀝니다.<br>
+    <b>함께 움직이는 모습을 보려면</b> 컴퓨터에서 체험 화면 위쪽의 ‘새 창에서 열기’로 학생 화면과 선생님 포털(또는 수업 화면)을 창 두 개로 나란히 열어 보세요. 한쪽에서 누르면 다른 쪽이 바로 바뀝니다.<br>
     이 체험 화면에서 누른 내용은 지금 쓰시는 기기에만 잠깐 저장되고, 실제 수업 기록과는 완전히 분리되어 있습니다.
   </div>
 
@@ -86,6 +94,10 @@ button{font:inherit;font-weight:700;color:var(--ink);cursor:pointer;border:none;
     <span id="msg" role="status"></span>
   </div>
 </main>
+<div id="view" role="dialog" aria-label="체험 화면">
+  <div id="bar"><button id="close" type="button">← 체험 안내로 돌아가기</button><b id="vt"></b><a id="newwin" target="_blank" rel="noopener">새 창에서 열기</a></div>
+  <iframe id="frame" title="체험 화면"></iframe>
+</div>
 <script>
 // 체험용 예시 자료: 가상의 학생 6명과 며칠치 숙제 기록을 이 기기(브라우저)에만 넣어 둡니다
 (function () {
@@ -139,6 +151,28 @@ button{font:inherit;font-weight:700;color:var(--ink);cursor:pointer;border:none;
   var has = false;
   try { has = !!localStorage.getItem(KEY) && localStorage.getItem('sw_demo_v') === VER; } catch (e) { }
   if (!has) put();
+  // 체험 화면은 이 페이지 위에 겹쳐서 엽니다. '돌아가기'나 브라우저의 뒤로 가기를 누르면 이 안내 화면으로 돌아옵니다
+  var view = document.getElementById('view'), frame = document.getElementById('frame'), timer = null;
+  function go(u) { try { frame.contentWindow.location.replace(u); } catch (e) { frame.src = u; } }   // 뒤로 가기 기록을 늘리지 않게 바꿔 끼웁니다
+  function close() { view.classList.remove('on'); go('about:blank'); document.body.style.overflow = ''; clearInterval(timer); }
+  function open(src, title) {
+    document.getElementById('vt').textContent = title;
+    document.getElementById('newwin').href = src;
+    frame.className = src.indexOf('index.html') === 0 ? 'phone' : '';
+    go(src); view.classList.add('on'); document.body.style.overflow = 'hidden';
+    try { history.pushState({ demo: 1 }, ''); } catch (e) { }
+    clearInterval(timer);
+    if (src.indexOf('teacher.html') === 0) {   // 선생님 포털은 '숙제 현황'부터 보여 줍니다
+      var n = 0;
+      timer = setInterval(function () {
+        var b = null; try { b = frame.contentDocument.querySelector('[data-v="homework"]'); } catch (e) { }
+        if (b) { if (!b.classList.contains('on')) b.click(); clearInterval(timer); } else if (++n > 80) clearInterval(timer);
+      }, 150);
+    }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-open]'), function (b) { b.addEventListener('click', function () { open(b.getAttribute('data-open'), b.getAttribute('data-title')); }); });
+  document.getElementById('close').addEventListener('click', function () { if (history.state && history.state.demo) history.back(); else close(); });
+  window.addEventListener('popstate', close);
   document.getElementById('reset').addEventListener('click', function () {
     document.getElementById('msg').textContent = put() ? '처음 상태로 되돌렸어요. 열어 둔 화면은 새로고침해 주세요.' : '이 브라우저에서는 저장이 막혀 있어 체험 화면을 준비하지 못했어요.';
   });
