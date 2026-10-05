@@ -78,11 +78,10 @@ button{font:inherit;font-weight:700;color:var(--ink);cursor:pointer;border:none;
       <h2>수업 화면</h2>
       <ol>
         <li>선생님이 아이들과 대면으로, 수업용 모니터에 띄워 직접 수업하는 화면입니다.</li>
-        <li>수학 ‘각을 만들어요’가 바로 열립니다. <b>다음</b>을 누르면 각이 움직입니다.</li>
-        <li>오른쪽 <b>문제 풀이</b>를 시작하면 아이들 휴대폰에 같은 문제가 뜹니다.</li>
-        <li><b>수업 끝내기</b>를 누르면 과목을 골라 과학 ‘물질의 상태’도 볼 수 있습니다.</li>
+        <li>수학 ‘각도’ 수업 한 편을 첫 장부터 끝까지 볼 수 있습니다.</li>
+        <li><b>다음</b>·<b>이전</b>을 누르면 설명이 하나씩 나오고 각이 움직입니다.</li>
       </ol>
-      <button class="go" type="button" data-open="stage.html?mock" data-title="수업 화면">수업 화면 열기</button>
+      <button class="go" type="button" data-open="stage.html?mock" data-title="선생님 수업용 화면 · 체험">수업 화면 열기</button>
     </section>
   </div>
 
@@ -97,7 +96,7 @@ button{font:inherit;font-weight:700;color:var(--ink);cursor:pointer;border:none;
 </main>
 <div id="view" role="dialog" aria-label="체험 화면">
   <div id="bar"><button id="close" type="button">← 체험 안내로 돌아가기</button><b id="vt"></b></div>
-  <div id="note2" role="note">이 교육 자료는 선생님이 아이들과 대면으로, 수업용 모니터를 통해 직접 상세히 수업합니다.<br><span style="font-weight:600;font-size:.9em">오른쪽 아래 ‘다음’을 누르면 각이 움직입니다.</span></div>
+  <div id="note2" role="note"><span style="display:inline-block;background:#3E3140;color:#fff;border-radius:999px;padding:1px 14px;margin-right:8px;font-size:.85em">선생님 수업용 화면</span>이 교육 자료는 선생님이 아이들과 대면으로, 수업용 모니터를 통해 직접 상세히 수업합니다.<br><span style="font-weight:600;font-size:.9em">‘다음’ · ‘이전’으로 수학 ‘각도’ 수업을 넘겨 보세요. 체험에서는 이 수업만 볼 수 있습니다.</span></div>
   <iframe id="frame" title="체험 화면"></iframe>
 </div>
 <script>
@@ -157,6 +156,21 @@ button{font:inherit;font-weight:700;color:var(--ink);cursor:pointer;border:none;
   var view = document.getElementById('view'), frame = document.getElementById('frame'), timer = null;
   function go(u) { try { frame.contentWindow.location.replace(u); } catch (e) { frame.src = u; } }   // 뒤로 가기 기록을 늘리지 않게 바꿔 끼웁니다
   function close() { view.classList.remove('on'); go('about:blank'); document.body.style.overflow = ''; clearInterval(timer); }
+  // 수업 화면 안에서 실행됩니다: 각도 수업만 넘겨 볼 수 있고, 다른 수업·문제·대기실로는 나갈 수 없게 합니다
+  function lockStage() {
+    var ID = 'math-angle', OUT = '[data-act=stop],[data-act=start],[data-act=lesson],[data-act=subj],[data-act=subjback]';
+    var st = document.createElement('style'); st.textContent = OUT + ',.bar a{display:none !important}'; document.head.appendChild(st);
+    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest(OUT + ',.bar a')) { e.stopPropagation(); e.preventDefault(); } }, true);
+    var first = function () { return store.set(BASE + '/live', { sessionId: 'demo' + Date.now(), mode: 'lesson', lessonId: ID, page: 0, step: 0 }); };
+    var move = window.lessonMove;
+    window.lessonMove = function (dir) {   // 마지막 장에서 '다음'을 누르면 첫 장으로 돌아갑니다 ('수업 끝' 화면으로 넘어가지 않음)
+      var P = LESSONS[ID].pages, last = P.length - 1;
+      if (dir > 0 && live && live.page >= last && (live.step || 0) >= lessonMax(P[last])) return first();
+      return move(dir);
+    };
+    var keep = function () { if (!live || live.mode !== 'lesson' || live.lessonId !== ID || live.page >= LESSONS[ID].pages.length) first(); };
+    first(); setInterval(keep, 400);
+  }
   function open(src, title) {
     document.getElementById('vt').textContent = title;
     frame.className = src.indexOf('index.html') === 0 ? 'phone' : '';
@@ -164,14 +178,14 @@ button{font:inherit;font-weight:700;color:var(--ink);cursor:pointer;border:none;
     go(src); view.classList.add('on'); document.body.style.overflow = 'hidden';
     try { history.pushState({ demo: 1 }, ''); } catch (e) { }
     clearInterval(timer);
-    if (src.indexOf('stage.html') === 0) {   // 수업 화면은 수학 '각을 만들어요' 한 장부터 바로 보여 줍니다 ('다음'을 누르면 각이 움직임)
+    if (src.indexOf('stage.html') === 0) {   // 수업 화면은 수학 '각도' 수업 한 편만, 첫 장부터 보여 줍니다
       var k = 0;
       timer = setInterval(function () {
         var w = frame.contentWindow, ok = false;
-        try { ok = w.eval("typeof LESSONS !== 'undefined' && typeof store !== 'undefined' && typeof lessonMove === 'function' && document.querySelector('.sj-card,.lz-btns,.choices') !== null"); } catch (e) { }
+        try { ok = w.eval("typeof LESSONS !== 'undefined' && typeof store !== 'undefined' && typeof lessonMove === 'function' && document.querySelector('.sj-card,.lz-btns,.choices,.bar') !== null"); } catch (e) { }
         if (ok) {
           clearInterval(timer);
-          try { w.eval("LESSONS['math-angle'].pages = LESSONS['math-angle'].pages.filter(function (p) { return p.type === 'angle'; }); store.set(BASE + '/live', { sessionId: 'demo' + Date.now(), mode: 'lesson', lessonId: 'math-angle', page: 0, step: 0 });"); } catch (e) { }
+          try { w.eval("(" + lockStage.toString() + ")()"); } catch (e) { }
         } else if (++k > 80) clearInterval(timer);
       }, 150);
     }
