@@ -1,6 +1,5 @@
-// 영어 미션의 하루치 제목을 영어로 보여 줍니다 (daily.js 의 한글 제목을 덮어씀)
+// 영어 미션 제목: 5과 본문 제목을 그대로 보여 줍니다 (daily.js 의 한글 소제목을 덮어씀)
 (function () {
   if (typeof DAILY === 'undefined') return;
-  ['What Happened?', "Ann's Story", "Carlos's Story", 'Carlos and Diego', 'Diego and Camila', "Camila's Story", 'Who Did It?']
-    .forEach(function (t, i) { if (DAILY.days[i]) DAILY.days[i].title = t; });
+  DAILY.days.forEach(function (d) { d.title = 'Who Threw a Cake at the Monalisa?'; });
 })();
