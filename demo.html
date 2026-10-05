@@ -79,9 +79,9 @@ button{font:inherit;font-weight:700;color:var(--ink);cursor:pointer;border:none;
       <h2>수업 화면</h2>
       <ol>
         <li>선생님이 아이들과 대면으로, 수업용 모니터에 띄워 직접 수업하는 화면입니다.</li>
-        <li>과목을 고르고 왼쪽 <b>수업</b>을 누르면 움직이는 수업 자료가 열립니다.</li>
+        <li>수학 ‘각을 만들어요’가 바로 열립니다. <b>다음</b>을 누르면 각이 움직입니다.</li>
         <li>오른쪽 <b>문제 풀이</b>를 시작하면 아이들 휴대폰에 같은 문제가 뜹니다.</li>
-        <li>수학 ‘각’, 과학 ‘물질의 상태’를 추천합니다.</li>
+        <li><b>수업 끝내기</b>를 누르면 과목을 골라 과학 ‘물질의 상태’도 볼 수 있습니다.</li>
       </ol>
       <button class="go" type="button" data-open="stage.html?mock" data-title="수업 화면">수업 화면 열기</button>
     </section>
@@ -99,7 +99,7 @@ button{font:inherit;font-weight:700;color:var(--ink);cursor:pointer;border:none;
 </main>
 <div id="view" role="dialog" aria-label="체험 화면">
   <div id="bar"><button id="close" type="button">← 체험 안내로 돌아가기</button><b id="vt"></b><a id="newwin" target="_blank" rel="noopener">새 창에서 열기</a></div>
-  <div id="note2" role="note">이 교육 자료는 선생님이 아이들과 대면으로, 수업용 모니터를 통해 직접 상세히 수업합니다.</div>
+  <div id="note2" role="note">이 교육 자료는 선생님이 아이들과 대면으로, 수업용 모니터를 통해 직접 상세히 수업합니다.<br><span style="font-weight:600;font-size:.9em">오른쪽 아래 ‘다음’을 누르면 각이 움직입니다.</span></div>
   <iframe id="frame" title="체험 화면"></iframe>
 </div>
 <script>
@@ -167,6 +167,17 @@ button{font:inherit;font-weight:700;color:var(--ink);cursor:pointer;border:none;
     go(src); view.classList.add('on'); document.body.style.overflow = 'hidden';
     try { history.pushState({ demo: 1 }, ''); } catch (e) { }
     clearInterval(timer);
+    if (src.indexOf('stage.html') === 0) {   // 수업 화면은 수학 '각을 만들어요' 한 장부터 바로 보여 줍니다 ('다음'을 누르면 각이 움직임)
+      var k = 0;
+      timer = setInterval(function () {
+        var w = frame.contentWindow, ok = false;
+        try { ok = w.eval("typeof LESSONS !== 'undefined' && typeof store !== 'undefined' && typeof lessonMove === 'function' && document.querySelector('.sj-card,.lz-btns,.choices') !== null"); } catch (e) { }
+        if (ok) {
+          clearInterval(timer);
+          try { w.eval("LESSONS['math-angle'].pages = LESSONS['math-angle'].pages.filter(function (p) { return p.type === 'angle'; }); store.set(BASE + '/live', { sessionId: 'demo' + Date.now(), mode: 'lesson', lessonId: 'math-angle', page: 0, step: 0 });"); } catch (e) { }
+        } else if (++k > 80) clearInterval(timer);
+      }, 150);
+    }
     if (src.indexOf('teacher.html') === 0) {   // 선생님 포털은 '숙제 현황'부터 보여 줍니다
       var n = 0;
       timer = setInterval(function () {
