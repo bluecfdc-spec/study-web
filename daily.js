@@ -166,7 +166,12 @@ const Daily = (function () {
   function begin(sid) {
     const p = plan(sid), queue = [];
     p.review.forEach(id => queue.push({ kind: 'q', s: byId[id].s, bi: byId[id].bi, review: true }));
-    p.sens.forEach(s => { queue.push({ kind: 'card', s: s }); s.blanks.forEach((b, bi) => queue.push({ kind: 'q', s: s, bi: bi })); });
+    if (p.day === 0) p.sens.forEach(s => { queue.push({ kind: 'card', s: s }); s.blanks.forEach((b, bi) => queue.push({ kind: 'q', s: s, bi: bi })); });
+    else {   // 2일째부터: 새 문장을 먼저 모두 보고, 문제는 그 뒤에 순서를 섞어서 풉니다 (보고 바로 고르지 못하게)
+      const qs = [];
+      p.sens.forEach(s => { queue.push({ kind: 'card', s: s }); s.blanks.forEach((b, bi) => qs.push({ kind: 'q', s: s, bi: bi })); });
+      shuffle(qs).forEach(q => queue.push(q));
+    }
     p.mix.forEach(id => queue.push({ kind: 'q', s: byId[id].s, bi: byId[id].bi, review: true }));
     S = { queue: queue, i: 0, right: 0, total: countQ(p), done: 0, wrong: Object.assign({}, rec(sid).wrong || {}), isNew: p.sens.length > 0, picked: null, opts: null, today: {}, dayNo: p.sens.length ? p.day + 1 : 0 };
     prep();
@@ -254,7 +259,7 @@ const Daily = (function () {
       const who = cur.s.who ? '<div class="d-tag">' + esc(cur.s.who) + '</div>' : '';
       if (cur.kind === 'card') {
         return prog + '<div class="d-tags"><div class="d-tag">새 문장</div>' + sayBtn(plain(cur.s)) + '</div>' + who + '<div class="card"><p class="d-en">' + sentenceHTML(cur.s, 'show') + '</p><p class="d-ko">' + esc(cur.s.ko) + '</p></div>' +
-          '<p class="sub">색칠한 단어를 잘 봐 두세요</p><button class="big" data-act="d-next" style="margin-top:auto">봤어요! 문제 풀기</button>';
+          '<p class="sub">색칠한 단어를 잘 봐 두세요</p><button class="big" data-act="d-next" style="margin-top:auto">' + ((S.queue[S.i + 1] || {}).kind === 'card' ? '봤어요! 다음 문장' : '봤어요! 문제 풀기') + '</button>';
       }
       const bl = cur.s.blanks[cur.bi], answered = S.picked != null, ok = S.picked === bl.w;
       return prog + '<div class="d-tags"><div class="d-tag">' + (S.practice ? '틀린 단어 복습' : (cur.review ? '다시 풀기' : '빈칸 채우기')) + '</div>' + (answered ? sayBtn(plain(cur.s)) : '') + '</div>' + who +
