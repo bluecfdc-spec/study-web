@@ -1,17 +1,18 @@
-// 영어 주간 시험: 영어 미션(DAILY) 일주일치 빈칸 문제를 18문제씩 두 묶음의 퀴즈로 만듭니다. 강의 없이 문제만.
+// 영어 주간 시험: 영어 미션(DAILY) 일주일치 빈칸 문제를 18문제 이하 묶음 여러 개의 퀴즈로 만듭니다. 강의 없이 문제만.
 // 수업 화면과 학생 폰이 똑같은 보기를 봐야 하므로, 보기는 무작위가 아니라 문제 번호로 정해집니다.
 (function () {
   if (typeof DAILY === 'undefined' || typeof SETS === 'undefined') return;
   const pools = {}, items = [];
   const add = (t, w) => { const p = pools[t] = pools[t] || []; if (!p.some(x => x.toLowerCase() === w.toLowerCase())) p.push(w); };
-  const RE = /\{([^}|]+)(?:\|(\w+))?\}/g;
+  const RE = /\{([^}|]+)(?:\|(\w+))?(\|\+)?\}/g;
   DAILY.days.forEach(d => d.s.forEach(x => x.en.replace(RE, (m, w, t) => { add(t || 'n', w); return m; })));
   Object.keys(DAILY.extra || {}).forEach(t => DAILY.extra[t].forEach(w => add(t, w)));
 
   let n = 0, si = 0;
   DAILY.days.forEach((d, di) => d.s.forEach(x => {
     const blanks = [];
-    x.en.replace(RE, (m, w, t) => { blanks.push({ w: w, t: t || 'n' }); return m; });
+    let nOld = 0, nNew = 0;   // 빈칸 번호는 daily.js 와 같은 규칙 (나중에 추가한 빈칸은 n0, n1…)
+    x.en.replace(RE, (m, w, t, plus) => { blanks.push({ w: w, t: t || 'n', id: 's' + si + (plus ? 'n' + nNew++ : 'b' + nOld++) }); return m; });
     const full = x.en.replace(RE, (m, w) => w);
     blanks.forEach((bl, bi) => {
       let k = -1;
@@ -25,18 +26,20 @@
       const a = n % (uniq.length + 1);
       const choices = uniq.slice(0, a).concat([bl.w], uniq.slice(a));
       // bid: 영어 미션과 같은 빈칸 번호 (시험에서 틀리면 단어장에 같은 단어로 들어가게)
-      items.push({ q: q, ask: x.ko, choices: choices, a: a, why: (di + 1) + '일째 문장 · 정답은 "' + bl.w + '"', bid: 's' + si + 'b' + bi, w: bl.w, full: full, sayA: cut[0], sayB: cut[1] || '' });
+      items.push({ q: q, ask: x.ko, choices: choices, a: a, why: (di + 1) + '일째 문장 · 정답은 "' + bl.w + '"', bid: bl.id, w: bl.w, full: full, sayA: cut[0], sayB: cut[1] || '' });
       n++;
     });
     si++;
   }));
-  const half = Math.ceil(items.length / 2);
-  [[0, half, '①'], [half, items.length, '②']].forEach((r, i) => {
+  // 한 묶음이 18문제를 넘지 않게 고르게 나눕니다 (결과표가 한 화면에 들어오는 크기)
+  const nSets = Math.ceil(items.length / 18), per = Math.ceil(items.length / nSets);
+  for (let i = 0; i < nSets; i++) {
+    const from = i * per, to = Math.min(items.length, from + per), mark = '①②③④⑤'.charAt(i) || String(i + 1);
     SETS[DAILY.id + '-week1-' + (i + 1)] = {
-      subject: '영어', unit: DAILY.title + ' · 1주차 ' + r[2], title: DAILY.title + ' 1주차 숙제 시험 ' + r[2] + ' (' + (r[0] + 1) + '~' + r[1] + '번 문제)',
-      ask: '빈칸에 들어갈 말은?', choices: [], items: items.slice(r[0], r[1])
+      subject: '영어', unit: DAILY.title + ' · 1주차 ' + mark, title: DAILY.title + ' 1주차 숙제 시험 ' + mark + ' (' + (from + 1) + '~' + to + '번 문제)',
+      ask: '빈칸에 들어갈 말은?', choices: [], items: items.slice(from, to)
     };
-  });
+  }
 
   const isStage = !!document.title && document.title.indexOf('수업') >= 0;
   // 영어 문장은 길어서 글씨를 조금 작게. 문제가 많은 시험의 결과표는 스크롤 없이 한눈에 보이게 촘촘하게.

@@ -1,44 +1,45 @@
 // 오늘의 영어 미션: 본문을 하루에 서너 문장씩, 빈칸을 눌러 채우는 숙제
-// {단어|종류} 가 빈칸이 됩니다. 종류: n 이름, v 동작, a 모습·비교, p 위치, d 어떻게
+// {단어|종류} 가 빈칸이 됩니다. 종류: n 이름, v 동작, a 모습·비교, p 위치, d 어떻게, t 때
+// {단어|종류|+} 는 나중에 추가한 빈칸입니다. 번호를 따로 매겨서(s0n0…) 예전 빈칸 번호(s0b0…)와 아이들 기록이 밀리지 않게 합니다
 const DAILY = {
   id: 'eng5', subject: '영어', title: 'Lesson 5',
   days: [
     { title: '사건이 일어났다', s: [
-      { en: 'Last Saturday, someone {threw|v} a cake at the Monalisa in the Botero {Museum|n} in Bogota, Colombia.', ko: "지난주 토요일, 콜롬비아 보고타에 있는 보테로 미술관에서 누군가가 '모나리자'에 케이크를 던졌다." },
-      { en: 'There were four {eyewitnesses|n}.', ko: '목격자는 네 명이 있었다.' },
+      { en: '{Last Saturday|t|+}, someone {threw|v} a cake at the Monalisa in the Botero {Museum|n} in Bogota, Colombia.', ko: "지난주 토요일, 콜롬비아 보고타에 있는 보테로 미술관에서 누군가가 '모나리자'에 케이크를 던졌다." },
+      { en: '{There were|v|+} four {eyewitnesses|n}.', ko: '목격자는 네 명이 있었다.' },
       { en: 'What did they {say|v}?', ko: '그들이 무엇을 말했을까?' },
       { en: 'Read the following, and find the {criminal|n}.', ko: '다음 내용을 읽고, 범인을 찾아라.' }
     ] },
     { title: '방문객 Ann의 말', s: [
-      { who: 'Ann Jones · 방문객', en: 'I was {looking at|v} the Monalisa, and someone threw a cake at the {painting|n}.', ko: "저는 '모나리자'를 보고 있었는데, 누군가가 그림에 케이크를 던졌어요." },
-      { who: 'Ann Jones · 방문객', en: 'I {turned around|v} and saw an old man.', ko: '저는 뒤를 돌아보았고 한 노인을 봤어요.' },
-      { who: 'Ann Jones · 방문객', en: 'He was standing {in front of|p} a wheelchair.', ko: '그는 휠체어 앞에 서 있었죠.' },
-      { who: 'Ann Jones · 방문객', en: "I'm about 170 cm tall, and he was a little {taller than|a} me.", ko: '저는 키가 약 170cm인데, 그는 저보다 조금 더 키가 컸어요.' }
+      { who: 'Ann Jones, a visitor · 방문객', en: 'I was {looking at|v} the Monalisa, and {someone|n|+} threw a cake at the {painting|n}.', ko: "저는 '모나리자'를 보고 있었는데, 누군가가 그림에 케이크를 던졌어요." },
+      { who: 'Ann Jones, a visitor · 방문객', en: 'I {turned around|v} and saw an old man.', ko: '저는 뒤를 돌아보았고 한 노인을 봤어요.' },
+      { who: 'Ann Jones, a visitor · 방문객', en: 'He was {standing|v|+} {in front of|p} a {wheelchair|n|+}.', ko: '그는 휠체어 앞에 서 있었죠.' },
+      { who: 'Ann Jones, a visitor · 방문객', en: "I'm about 170 cm tall, and he was {a little|d|+} {taller than|a} me.", ko: '저는 키가 약 170cm인데, 그는 저보다 조금 더 키가 컸어요.' }
     ] },
     { title: '관리인 Carlos의 말 ①', s: [
-      { who: 'Carlos Diaz · 관리인', en: 'An old man with {gray|a} hair was running away, and something {fell off|v} his head.', ko: '머리가 회색인 한 노인이 도망치고 있었는데, 머리에서 무언가가 떨어졌습니다.' },
-      { who: 'Carlos Diaz · 관리인', en: 'It was his {wig|n}.', ko: '그건 그의 가발이었죠.' },
-      { who: 'Carlos Diaz · 관리인', en: "I {ran after|v} him, but I couldn't {catch|v} him.", ko: '저는 그를 쫓아서 뛰어갔지만, 그를 잡을 수가 없었습니다.' },
-      { who: 'Carlos Diaz · 관리인', en: 'He was {faster than|a} me.', ko: '그는 저보다 빨랐어요.' }
+      { who: 'Carlos Diaz, a janitor · 관리인', en: 'An old man with {gray|a} hair was running away, and something {fell off|v} his head.', ko: '머리가 회색인 한 노인이 도망치고 있었는데, 머리에서 무언가가 떨어졌습니다.' },
+      { who: 'Carlos Diaz, a janitor · 관리인', en: 'It was his {wig|n}.', ko: '그건 그의 가발이었죠.' },
+      { who: 'Carlos Diaz, a janitor · 관리인', en: "I {ran after|v} him, but I {couldn't catch|v} him.", ko: '저는 그를 쫓아서 뛰어갔지만, 그를 잡을 수가 없었습니다.' },
+      { who: 'Carlos Diaz, a janitor · 관리인', en: 'He was {faster than|a} me.', ko: '그는 저보다 빨랐어요.' }
     ] },
     { title: 'Carlos의 말 ② · 경비원 Diego', s: [
-      { who: 'Carlos Diaz · 관리인', en: 'In fact, the old man was not {old|a}.', ko: '사실, 그 노인은 나이가 들지 않았죠.' },
-      { who: 'Carlos Diaz · 관리인', en: 'He was a {young|a} man with long {brown|a} hair.', ko: '그는 긴 갈색 머리를 한 젊은 남자였어요.' },
-      { who: 'Diego Perez · 경비원', en: 'I went to the {crime scene|n}, and there were {pieces|n} of cake all over the painting.', ko: '저는 범죄 현장으로 갔는데, 그림 곳곳에 케이크 조각들이 있었습니다.' }
+      { who: 'Carlos Diaz, a janitor · 관리인', en: 'In fact, the old man was not {old|a}.', ko: '사실, 그 노인은 나이가 들지 않았죠.' },
+      { who: 'Carlos Diaz, a janitor · 관리인', en: 'He was a {young|a} man with long {brown|a} hair.', ko: '그는 긴 갈색 머리를 한 젊은 남자였어요.' },
+      { who: 'Diego Perez, a guard · 경비원', en: 'I went to the {crime scene|n}, and there were {pieces|n} of cake {all over|p|+} the painting.', ko: '저는 범죄 현장으로 갔는데, 그림 곳곳에 케이크 조각들이 있었습니다.' }
     ] },
     { title: 'Diego의 말 ② · 빵집 주인 Camila', s: [
-      { who: 'Diego Perez · 경비원', en: 'There was also a wheelchair {near|p} the painting, and I found a cake box {next to|p} the wheelchair.', ko: '또한 그림 근처에는 휠체어가 있었고, 휠체어 옆에서 저는 케이크 상자를 발견했어요.' },
-      { who: 'Diego Perez · 경비원', en: "The box was from Camila's {Bakery|n}.", ko: '그 상자는 카밀라 빵집의 상자였습니다.' },
-      { who: 'Camila Santos · 빵집 주인', en: 'Last Friday, a young man {came in|v}.', ko: '지난주 금요일, 한 젊은 남자가 들어왔어요.' }
+      { who: 'Diego Perez, a guard · 경비원', en: 'There was also a wheelchair {near|p} the painting, and I found a cake box {next to|p} the wheelchair.', ko: '또한 그림 근처에는 휠체어가 있었고, 휠체어 옆에서 저는 케이크 상자를 발견했어요.' },
+      { who: 'Diego Perez, a guard · 경비원', en: "The box was from Camila's {Bakery|n}.", ko: '그 상자는 카밀라 빵집의 상자였습니다.' },
+      { who: "Camila Santos, the owner of Camila's Bakery · 빵집 주인", en: 'Last Friday, a young man {came in|v}.', ko: '지난주 금요일, 한 젊은 남자가 들어왔어요.' }
     ] },
     { title: '빵집 주인 Camila의 말', s: [
-      { who: 'Camila Santos · 빵집 주인', en: "I spoke to him in {Spanish|n}, but he didn't {understand|v} me.", ko: '저는 그에게 스페인어로 말했지만, 그는 제 말을 이해하지 못했어요.' },
-      { who: 'Camila Santos · 빵집 주인', en: 'He spoke only {English|n}.', ko: '그는 영어만 말했죠.' },
-      { who: 'Camila Santos · 빵집 주인', en: 'We had a lot of {different|a} cakes, but he just wanted the {smallest|a} one.', ko: '저희 가게에는 다양한 케이크들이 많이 있었는데, 그는 단지 가장 작은 것을 원했어요.' },
-      { who: 'Camila Santos · 빵집 주인', en: 'We sold only one cake that day, so I {remember|v} him {clearly|d}.', ko: '저희는 그날 딱 한 개의 케이크만 팔았으니까, 저는 그를 분명히 기억해요.' }
+      { who: "Camila Santos, the owner of Camila's Bakery · 빵집 주인", en: "I spoke to him in {Spanish|n}, but he {didn't understand|v} me.", ko: '저는 그에게 스페인어로 말했지만, 그는 제 말을 이해하지 못했어요.' },
+      { who: "Camila Santos, the owner of Camila's Bakery · 빵집 주인", en: 'He {spoke|v|+} only {English|n}.', ko: '그는 영어만 말했죠.' },
+      { who: "Camila Santos, the owner of Camila's Bakery · 빵집 주인", en: 'We had a lot of {different|a} cakes, but he just wanted the {smallest|a} one.', ko: '저희 가게에는 다양한 케이크들이 많이 있었는데, 그는 단지 가장 작은 것을 원했어요.' },
+      { who: "Camila Santos, the owner of Camila's Bakery · 빵집 주인", en: 'We sold {only one|a|+} cake that day, so I {remember|v} him {clearly|d}.', ko: '저희는 그날 딱 한 개의 케이크만 팔았으니까, 저는 그를 분명히 기억해요.' }
     ] },
     { title: '범인은 누구?', s: [
-      { who: 'Camila Santos · 빵집 주인', en: 'Oh, he had {blue|a} eyes.', ko: '아, 그의 눈은 파란색이었어요.' },
+      { who: "Camila Santos, the owner of Camila's Bakery · 빵집 주인", en: 'Oh, he had {blue|a} eyes.', ko: '아, 그의 눈은 파란색이었어요.' },
       { en: 'Now, look at the {information|n} about the {suspects|n}.', ko: '이제, 용의자들에 관한 정보를 보아라.' },
       { en: 'Who {threw|v} the cake at the Monalisa?', ko: "누가 '모나리자'에 케이크를 던졌을까?" }
     ] }
@@ -48,13 +49,16 @@ const DAILY = {
     'threw': '던졌다', 'Museum': '미술관', 'eyewitnesses': '목격자들', 'say': '말하다', 'criminal': '범인',
     'looking at': '~을 보고 있는', 'painting': '그림', 'turned around': '뒤를 돌아보았다', 'in front of': '~ 앞에',
     'taller than': '~보다 키가 더 큰', 'gray': '회색의', 'fell off': '~에서 떨어졌다', 'wig': '가발',
-    'ran after': '~을 쫓아 뛰어갔다', 'catch': '잡다', 'faster than': '~보다 더 빠른', 'old': '나이 든', 'young': '젊은',
+    'ran after': '~을 쫓아 뛰어갔다', "couldn't catch": '잡을 수 없었다', 'faster than': '~보다 더 빠른', 'old': '나이 든', 'young': '젊은',
     'brown': '갈색의', 'crime scene': '범죄 현장', 'pieces': '조각들', 'near': '~ 근처에', 'next to': '~ 옆에',
-    'Bakery': '빵집', 'came in': '들어왔다', 'Spanish': '스페인어', 'understand': '이해하다', 'English': '영어',
+    'Bakery': '빵집', 'came in': '들어왔다', 'Spanish': '스페인어', "didn't understand": '이해하지 못했다', 'English': '영어',
     'different': '다양한, 다른', 'smallest': '가장 작은', 'remember': '기억하다', 'clearly': '분명히', 'blue': '파란',
-    'information': '정보', 'suspects': '용의자들'
+    'information': '정보', 'suspects': '용의자들',
+    // 학교 학습지·쓰기 수행평가에 나오는 표현
+    'Last Saturday': '지난주 토요일', 'There were': '~이 있었다', 'someone': '누군가', 'standing': '서 있는', 'wheelchair': '휠체어',
+    'a little': '조금, 약간', 'all over': '~ 곳곳에', 'spoke': '말했다', 'only one': '딱 하나의'
   },
-  extra: { n: [], v: ['bought', 'sold'], a: ['shorter than', 'red'], p: ['behind', 'under', 'on top of'], d: ['slowly', 'quickly', 'loudly'] }
+  extra: { t: ['Last Friday', 'Last Sunday', 'Next Saturday'], n: [], v: ['bought', 'sold'], a: ['shorter than', 'red'], p: ['behind', 'under', 'on top of'], d: ['slowly', 'quickly', 'loudly'] }
 };
 
 const Daily = (function () {
@@ -66,9 +70,10 @@ const Daily = (function () {
   C.days.forEach((d, di) => d.s.forEach(x => {
     const idx = sentences.length, parts = [], blanks = [];
     let last = 0;
-    x.en.replace(/\{([^}|]+)(?:\|(\w+))?\}/g, (m, w, t, off) => {
+    let nOld = 0, nNew = 0;
+    x.en.replace(/\{([^}|]+)(?:\|(\w+))?(\|\+)?\}/g, (m, w, t, plus, off) => {
       parts.push(x.en.slice(last, off)); parts.push({ b: blanks.length });
-      const bl = { w: w, t: t || 'n', id: 's' + idx + 'b' + blanks.length };
+      const bl = { w: w, t: t || 'n', id: 's' + idx + (plus ? 'n' + nNew++ : 'b' + nOld++) };
       blanks.push(bl); last = off + m.length; return m;
     });
     parts.push(x.en.slice(last));
