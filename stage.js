@@ -126,7 +126,7 @@ function seats(stateOf) {
 function render() {
   if (authed === null) return;
   if (!authed) { app.innerHTML = '<h1>수업 화면</h1><p class="sub">선생님 포털에서 먼저 로그인해 주세요.</p><p class="sub"><a href="teacher.html' + Q + '">선생님 포털로 가기</a></p>'; return; }
-  if (live && live.mode === 'lesson' && LESSONS[live.lessonId]) { app.innerHTML = lessonHTML(); return; }
+  if (live && live.mode === 'lesson' && LESSONS[live.lessonId]) { try { app.innerHTML = lessonHTML(); } catch (e) { }  return; }   // 새 강의 그림(lesson.js)이 아직 안 실렸을 때 멈추지 않게: 실리면 다시 그립니다
   const set = live && SETS[live.setId];
   if (!set) {
     app.innerHTML = '<h1>대기실</h1><p class="sub">친구들이 들어오면 캐릭터가 선명해져요</p>' +
