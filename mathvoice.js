@@ -12,7 +12,10 @@
   document.head.insertAdjacentHTML('beforeend', '<style>' +
     '#vprog{height:8px;border-radius:999px;background:#F1E2DE;overflow:hidden;visibility:hidden;flex:none;margin-top:4px}#vprog.on{visibility:visible}' +
     '#vprog i{display:block;height:100%;width:0;background:var(--mint);border-radius:999px;transition:width .25s linear}' +
-    '#next.wait{background:#E8D6D9;color:var(--sub)}</style>');
+    '#next.wait{background:#E8D6D9;color:var(--sub)}' +
+    '#vgate{position:fixed;inset:0;background:rgba(74,59,71,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:24px}' +
+    '#vgate button{font-family:var(--display);font-size:clamp(24px,6vw,34px);font-weight:400;background:var(--pink);color:#3A2230;border-radius:28px;padding:22px 34px;box-shadow:0 8px 0 #C9557F;min-height:0}' +
+    '#vgate small{display:block;font-family:var(--body);font-size:15px;font-weight:700;margin-top:6px;color:#5A2A3C}</style>');
   const prog = document.createElement('div'); prog.id = 'vprog'; prog.innerHTML = '<i></i>';
   bar.parentNode.insertBefore(prog, bar);
   const fill = prog.firstChild;
@@ -49,6 +52,12 @@
   store.get(BASE + '/voice/' + VID.k).then(v => {
     if (v) Object.keys(v).forEach(n => { if (v[n] && v[n].d) { const a = new Audio(v[n].d); a.preload = 'auto'; wire(a); clips[n] = a; lens[n] = v[n].ms || 0; } });
     ready = true;
-    play(VID.cur());
+    // 폰은 처음 한 번은 손으로 눌러야 소리가 나옵니다 → 큰 시작 버튼을 띄우고, 누르면 그 장면 목소리부터 재생
+    if (clips[VID.cur()]) {
+      const g = document.createElement('div'); g.id = 'vgate';
+      g.innerHTML = '<button type="button">▶ 선생님 목소리 듣기<small>눌러서 수업 시작</small></button>';
+      document.body.appendChild(g);
+      g.addEventListener('click', () => { g.remove(); play(VID.cur()); });
+    }
   }).catch(() => { ready = true; });
 })();
