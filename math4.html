@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>크림이네 공부방 · 외각의 합 설명</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap">
+<script>document.write('<link rel="stylesheet" href="mathvid.css?v=' + Date.now() + '">');</script>
+</head>
+<body>
+<main>
+<h1 id="ttl">다각형의 <span class="k" id="kw">외각의 합</span></h1>
+<div class="row">
+  <svg id="svg" viewBox="0 0 440 440" aria-label="오각형"></svg>
+  <div class="side">
+    <div class="formula" id="fml"><span id="fE">외각의 합</span><span>=</span><span id="f360">360°</span></div>
+    <div class="asm sm"><span id="a1">180° × 5</span><span id="a2">− 540°</span><span id="a3" class="eq">= 360°</span></div>
+    <hr id="rule">
+    <div class="build">
+      <div class="l" id="b1">한 꼭짓점: 내각 + 외각 = <b>180°</b></div>
+      <div class="l" id="b2">꼭짓점 5개 전부: 180° × 5 = <b>900°</b></div>
+      <div class="l" id="b3">내각의 합: 180° × (5 − 2) = <b>540°</b></div>
+      <div class="l" id="b4">외각의 합: 900° − 540° = <b>360°</b></div>
+    </div>
+  </div>
+</div>
+<div class="memo" id="memo"><small><span class="must">꼭! 꼭! 꼭! 외우기</span> 공식의 의미</small><b>다각형의 외각의 합 = 360°</b> (몇 각형이든 똑같다)<br>① 꼭짓점 하나에서 <b>내각 + 외각 = 180°</b> (일직선의 평각)<br>② 꼭짓점이 n개이므로 전부 더하면 <b>180° × n</b><br>③ 여기서 내각의 합 <b>180° × (n − 2)</b>를 빼면 <b>180° × 2 = 360°</b></div>
+<div class="bar">
+  <button id="prev" type="button">← 이전</button>
+  <span class="step" id="stepNo"></span>
+  <button id="home" type="button">처음으로</button>
+  <button id="next" class="go" type="button">다음 →</button>
+</div>
+</main>
+<script>
+(function () {
+  const N = 5, CX = 220, CY = 232, R = 152;
+  const P = []; for (let i = 0; i < N; i++) { const a = (90 - 360 * i / N) * Math.PI / 180; P.push([CX + R * Math.cos(a), CY - R * Math.sin(a)]); }
+  const NAMES = ['A', 'B', 'C', 'D', 'E'], COL = ['#F29BB5', '#F2B24C', '#58B894', '#8DB8FF', '#C9A7F0'];
+  const PT = (cx, cy, r, a) => (cx + r * Math.cos(a * Math.PI / 180)).toFixed(1) + ' ' + (cy - r * Math.sin(a * Math.PI / 180)).toFixed(1);
+  const sector = (c, r, a0, a1, color, cls, id, op) => '<path class="' + cls + '" id="' + id + '" d="M' + c[0] + ' ' + c[1] + ' L' + PT(c[0], c[1], r, a0) + ' A' + r + ' ' + r + ' 0 ' + ((a1 - a0) > 180 ? 1 : 0) + ' 0 ' + PT(c[0], c[1], r, a1) + ' Z" fill="' + color + '" fill-opacity="' + (op || .6) + '" stroke="' + color + '" stroke-width="2"/>';
+  const ang = (a, b) => Math.atan2(-(b[1] - a[1]), b[0] - a[0]) * 180 / Math.PI;
+  const ext = (a, b, len) => { const d = Math.hypot(b[0] - a[0], b[1] - a[1]); return [b[0] + (b[0] - a[0]) / d * len, b[1] + (b[1] - a[1]) / d * len]; };
+  let h = '';
+  for (let i = 0; i < N; i++) {
+    const prev = P[(i + 4) % 5], cur = P[i], next = P[(i + 1) % 5], e = ext(prev, cur, 46);
+    let aE = ang(cur, e), aN = ang(cur, next); while (aE < aN) aE += 360;          // 외각: 연장선 ~ 다음 변
+    let aP = ang(cur, prev); while (aP < aE) aP += 360;                             // 내각: 다음 변 ~ 이전 변 (연장선 반대쪽)
+    h += '<line class="ext" id="x' + i + '" x1="' + cur[0] + '" y1="' + cur[1] + '" x2="' + e[0] + '" y2="' + e[1] + '"/>';
+    h += sector(cur, 30, aE, aP, '#B9A8B3', 'sec', 'in' + i, .5);                   // 내각 (회색)
+    h += sector(cur, 34, aN, aE, COL[i], 'sec', 'out' + i);                          // 외각 (색)
+    const mid = (aN + aE) / 2, lx = cur[0] + 54 * Math.cos(mid * Math.PI / 180), ly = cur[1] - 54 * Math.sin(mid * Math.PI / 180);
+    h += '<text class="val" id="vo' + i + '" x="' + lx + '" y="' + (ly + 7) + '" fill="' + COL[i] + '">72°</text>';
+    const mi = (aE + aP) / 2, ix = cur[0] + 50 * Math.cos(mi * Math.PI / 180), iy = cur[1] - 50 * Math.sin(mi * Math.PI / 180);
+    h += '<text class="val" id="vi' + i + '" x="' + ix + '" y="' + (iy + 7) + '" fill="#7A6675">108°</text>';
+  }
+  for (let i = 0; i < N; i++) { const a = P[i], b = P[(i + 1) % N]; h += '<line class="edge" x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '"/>'; }
+  for (let i = 0; i < N; i++) { const [x, y] = P[i], ox = (x - CX) / R, oy = (y - CY) / R; h += '<circle class="vx" cx="' + x + '" cy="' + y + '" r="10"/>'; }
+  h += '<text class="lbl" x="' + (P[0][0] - 34) + '" y="' + (P[0][1] - 16) + '">A</text>';
+  // 가운데: 외각 5개를 한 점에 모은 원
+  let a = 90; for (let i = 0; i < N; i++) { h += sector([CX, CY], 50, a - 72, a, COL[i], 'pie', 'p' + i, .7); a -= 72; }
+  h += '<text class="val pie" id="p360" x="' + CX + '" y="' + (CY + 80) + '" fill="#1F5C45" font-size="22">모으면 360°</text>';
+  document.getElementById('svg').innerHTML = h;
+  const $ = id => document.getElementById(id);
+  const on = (id, c) => $(id).classList.add(c), off = (id, c) => $(id).classList.remove(c);
+  const show = function () { for (const id of arguments) on(id, 'show'); };
+  const blink = function () { for (const id of arguments) on(id, 'blink'); };
+  const unblink = () => document.querySelectorAll('.blink').forEach(e => e.classList.remove('blink'));
+  let timers = []; const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+
+  const STEPS = [
+    { sec: 4, run: () => { show('ttl'); blink('kw'); } },                                                   // 제목
+    { sec: 4, run: () => { show('svg'); } },                                                                // 오각형
+    { sec: 5, run: () => { off('kw', 'blink'); show('fml'); } },                                            // 본 공식
+    { sec: 6, run: () => { show('x0'); blink('x0'); } },                                                    // A 에서 변을 늘림
+    { sec: 7, run: () => { unblink(); show('in0', 'out0', 'vi0', 'vo0'); blink('in0', 'out0', 'vi0', 'vo0'); show('rule', 'b1'); } },   // 내각 + 외각 = 180°
+    { sec: 8, run: q => { unblink(); for (let i = 1; i < N; i++) { if (q) show('x' + i, 'in' + i, 'out' + i, 'vi' + i, 'vo' + i); else later(() => show('x' + i, 'in' + i, 'out' + i, 'vi' + i, 'vo' + i), 300 + (i - 1) * 700); } if (q) show('b2', 'a1'); else later(() => show('b2', 'a1'), 3300); } },   // 꼭짓점 5개 → 900°
+    { sec: 6, run: () => { for (let i = 0; i < N; i++) blink('in' + i, 'vi' + i); show('b3', 'a2'); } },    // 내각의 합 540°
+    { sec: 6, run: () => { unblink(); for (let i = 0; i < N; i++) blink('out' + i, 'vo' + i); show('b4', 'a3'); } },   // 900 − 540 = 360
+    { sec: 7, run: () => { unblink(); for (let i = 0; i < N; i++) { off('in' + i, 'show'); off('vi' + i, 'show'); } for (let i = 0; i < N; i++) show('p' + i); show('p360'); ['fE', 'f360'].forEach(id => on(id, 'lit')); } },   // 모으면 한 바퀴
+    { sec: 8, run: () => { show('memo'); } }                                                                // 요약
+  ];
+  let step = -1;
+  function reset() { timers.forEach(clearTimeout); timers = []; document.querySelectorAll('.blink,.show,.lit').forEach(e => e.classList.remove('blink', 'show', 'lit')); }
+  function go(n) {
+    if (n < 0 || n >= STEPS.length) return;
+    reset();
+    for (let i = 0; i < n; i++) { STEPS[i].run(true); timers.forEach(clearTimeout); timers = []; }
+    STEPS[n].run(false);
+    step = n;
+    $('stepNo').textContent = (n + 1) + ' / ' + STEPS.length;
+    $('prev').disabled = n === 0; $('next').textContent = n === STEPS.length - 1 ? '처음부터' : '다음 →';
+    if (window.VID && VID.onChange) VID.onChange(n);
+  }
+  $('next').addEventListener('click', () => go((step + 1) % STEPS.length));
+  $('prev').addEventListener('click', () => go(step - 1));
+  $('home').addEventListener('click', () => go(0));
+  document.addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); $('next').click(); } if (e.key === 'ArrowLeft') $('prev').click(); });
+  window.VID = { k: 4, go: go, steps: STEPS.length, cur: () => step, onChange: null };
+  // ?step=N 으로 특정 장면부터, ?rec 는 녹음용(버튼 숨김)
+  const Q0 = new URLSearchParams(location.search);
+  if (Q0.has('rec')) document.body.classList.add('rec');
+  go(Math.min(parseInt(Q0.get('step')) || 0, STEPS.length - 1));
+})();
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+// 항상 최신 파일을 받아 오도록 주소 뒤에 시간을 붙여 불러옵니다
+(function(){var v=Date.now();["common.js","mathquiz.js","mathvoice.js"].reduce(function(p,f){return p.then(function(){return new Promise(function(ok){var s=document.createElement("script");s.src=f+"?v="+v;s.onload=ok;document.body.appendChild(s);});});},Promise.resolve());})();
+</script>
+</body>
+</html>

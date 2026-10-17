@@ -7,7 +7,7 @@
     { k: 1, name: '다각형의 대각선의 개수', f: 'n × (n − 3) ÷ 2' },
     { k: 2, name: '삼각형의 내각과 외각', f: '∠A + ∠B = 외각' },
     { k: 3, name: '다각형의 내각의 합', f: '180° × (n − 2)' },
-    { k: 4, name: '다각형의 외각의 합', f: '360°', soon: true }
+    { k: 4, name: '다각형의 외각의 합', f: '360°', lock: true }   // 1·2·3 을 다 끝내야 열림
   ];
   let MV = {};
   document.head.insertAdjacentHTML('beforeend', '<style>' +
@@ -22,24 +22,27 @@
     '.mv-item .st{margin-left:auto;flex:none;font-size:14px;color:var(--sub)}.mv-item.done .st{color:#1F5C45;font-weight:700}</style>');
   const rec = k => (MV[me] || {})[k] || {};
   const state = k => { const r = rec(k); return r.done ? 'done' : (r.step || r.q != null ? 'half' : ''); };
-  const doneN = () => K.filter(x => !x.soon && state(x.k) === 'done').length;
+  const base3 = () => K.filter(x => !x.lock && state(x.k) === 'done').length;   // 1·2·3 완료 수
+  const open4 = () => base3() === 3;
+  const locked = x => x.lock && !open4();
+  const doneN = () => K.filter(x => state(x.k) === 'done').length;
   const href = k => 'math' + k + '.html?sid=' + encodeURIComponent(me) + (MOCK ? '&mock' : '');
 
   function card() {
     const n = doneN();
-    return '<button class="lb-card c-math" data-art="icon_math" data-act="m-open">수학 네 공식 외우기<small>' + (n === 3 ? '3개 모두 완료! 다시 봐도 좋아요' : '설명 듣고 문제 3개 · ' + n + ' / 3 완료') + '</small></button>';
+    return '<button class="lb-card c-math" data-art="icon_math" data-act="m-open">수학 네 공식 외우기<small>' + (n === 4 ? '4개 모두 완료! 다시 봐도 좋아요' : n === 3 ? '④ 외각의 합이 열렸어요! · 3 / 4 완료' : '설명 듣고 문제 3개 · ' + n + ' / 4 완료') + '</small></button>';
   }
   function board() {
-    return '<div class="mv-board"><div class="mv-title"><span>수학 공식 숙제 체크</span><span>' + doneN() + ' / 3</span></div><div class="mv-row">' + K.map(x => {
-      const s = x.soon ? 'soon' : state(x.k);
-      return '<div class="mv-cell ' + s + '"><b>' + (s === 'done' ? '✓' : x.k) + '</b>' + (x.soon ? '준비 중' : s === 'done' ? '완료' : s === 'half' ? '보는 중' : '아직') + '</div>';
+    return '<div class="mv-board"><div class="mv-title"><span>수학 공식 숙제 체크</span><span>' + doneN() + ' / 4</span></div><div class="mv-row">' + K.map(x => {
+      const s = locked(x) ? 'soon' : state(x.k);
+      return '<div class="mv-cell ' + s + '"><b>' + (s === 'done' ? '✓' : locked(x) ? '🔒' : x.k) + '</b>' + (locked(x) ? '잠김' : s === 'done' ? '완료' : s === 'half' ? '보는 중' : '아직') + '</div>';
     }).join('') + '</div></div>';
   }
   function listHTML() {
-    return '<h1>수학 네 공식 외우기</h1><p class="sub">하나씩 눌러서 설명을 듣고, 문제 3개를 풀면 완료!</p>' + K.map(x => {
-      const s = state(x.k), r = rec(x.k);
-      return '<button class="mv-item ' + s + '" data-act="m-go" data-k="' + x.k + '"' + (x.soon ? ' disabled' : '') + '><span class="num">' + (s === 'done' ? '✓' : x.k) + '</span><span>' + esc(x.name) + '<small>' + esc(x.f) + '</small></span>' +
-        '<span class="st">' + (x.soon ? '준비 중' : s === 'done' ? '완료' : s === 'half' ? (r.q != null ? '문제 ' + (Math.min(r.q, 3) + 1) + '번부터' : '이어 보기') : '시작') + '</span></button>';
+    return '<h1>수학 네 공식 외우기</h1><p class="sub">설명을 듣고 문제 3개를 모두 맞히면 완료! ①②③을 끝내면 ④가 열려요</p>' + K.map(x => {
+      const s = state(x.k), r = rec(x.k), lk = locked(x);
+      return '<button class="mv-item ' + s + '" data-act="m-go" data-k="' + x.k + '"' + (lk ? ' disabled' : '') + '><span class="num">' + (s === 'done' ? '✓' : lk ? '🔒' : x.k) + '</span><span>' + esc(x.name) + '<small>' + (lk ? '①②③을 다 끝내면 열려요' : esc(x.f)) + '</small></span>' +
+        '<span class="st">' + (lk ? '잠김' : s === 'done' ? '완료' : s === 'half' ? (r.q != null ? '문제 ' + (Math.min(r.q, 2) + 1) + '번부터' : '이어 보기') : '시작') + '</span></button>';
     }).join('') + '<button class="big" data-act="m-exit" style="margin-top:auto">대기실로</button>';
   }
 
