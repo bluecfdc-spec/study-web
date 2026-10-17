@@ -11,7 +11,7 @@
   ];
   let MV = {};
   document.head.insertAdjacentHTML('beforeend', '<style>' +
-    '.lb-card.c-math{background:var(--yellow)}' +
+    '.lb-card.c-math{background:#E8558A;color:#fff;box-shadow:0 6px 0 #B83A68;font-size:24px}.lb-card.c-math small{color:#FFE3EE}' +
     '.mv-board{background:#fff;border-radius:26px;padding:14px 12px}.mv-title{display:flex;justify-content:space-between;font-size:16px;color:var(--sub);padding:0 6px 8px}' +
     '.mv-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}' +
     '.mv-cell{aspect-ratio:1/1.1;border-radius:16px;background:#FBEDE8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13px;color:var(--sub)}' +
