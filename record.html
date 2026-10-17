@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>크림이네 공부방 · 선생님 목소리 녹음</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap">
+<style>
+:root{--bg:#FFF4EE;--fg:#4A3B47;--sub:#8A7584;--pink:#F29BB5;--mint:#58B894;--mintL:#BFE8D9;--yellow:#F2B24C;--yellowL:#FFE39A;--red:#E5484D;--display:"Jua","Noto Sans KR",sans-serif;--body:"Noto Sans KR","Apple SD Gothic Neo",sans-serif}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{height:100dvh;background:var(--bg);color:var(--fg);font-family:var(--body);display:flex;flex-direction:column;padding:8px 10px;gap:8px}
+h1{font-family:var(--display);font-weight:400;font-size:20px;margin:0;display:flex;align-items:center;gap:10px}
+h1 small{font-family:var(--body);font-size:13px;color:var(--sub);font-weight:400}
+.ks{display:flex;gap:6px}
+.ks button{flex:1;min-height:40px;border:none;border-radius:12px;background:#fff;font:inherit;font-weight:700;color:var(--fg);font-size:14px}
+.ks button.on{background:var(--yellowL);box-shadow:inset 0 0 0 3px var(--yellow)}
+.dots{display:flex;gap:4px;flex-wrap:wrap}
+.dots span{width:22px;height:22px;border-radius:50%;background:#F1E2DE;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--sub)}
+.dots span.has{background:var(--mintL);color:#1F5C45;font-weight:700}
+.dots span.cur{box-shadow:0 0 0 3px var(--pink)}
+.scene{background:#fff;border-radius:16px;padding:10px 14px;display:flex;flex-direction:column;gap:2px}
+.scene b{font-family:var(--display);font-weight:400;font-size:18px}
+.scene span{font-size:14px;color:var(--sub);line-height:1.45}
+.frame{flex:1;min-height:0;border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 0 0 3px #E8D6D9}
+iframe{width:100%;height:100%;border:0;display:block;pointer-events:none}
+.ctl{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ctl button{min-height:56px;border:none;border-radius:16px;background:#fff;font:inherit;font-weight:700;font-size:17px;color:var(--fg)}
+.ctl button:disabled{opacity:.35}
+#rec{grid-column:1/-1;background:var(--red);color:#fff;font-size:20px;min-height:64px}
+#rec.live{background:#B3122E;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.75}}
+#save{background:var(--mint);color:#fff}
+#redo{background:var(--yellowL)}
+.nav{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.nav button{min-height:48px;border:none;border-radius:14px;background:#fff;font:inherit;font-weight:700;font-size:16px;color:var(--fg)}
+#next{background:var(--pink);color:#3A2230}
+.msg{font-size:13px;color:var(--sub);text-align:center;min-height:18px}
+.msg.err{color:var(--red)}
+</style>
+</head>
+<body>
+<h1>🎙 선생님 목소리 녹음 <small id="who"></small></h1>
+<div class="ks" id="ks"></div>
+<div class="dots" id="dots"></div>
+<div class="scene"><b id="st"></b><span id="hint"></span></div>
+<div class="frame"><iframe id="ifr" title="장면 미리보기"></iframe></div>
+<div class="msg" id="msg"></div>
+<div class="ctl">
+  <button id="rec" type="button">⏺ 녹음 시작</button>
+  <button id="play" type="button" disabled>▶ 들어보기</button>
+  <button id="save" type="button" disabled>✓ 이 장면에 저장</button>
+</div>
+<div class="nav">
+  <button id="prev" type="button">◀ 이전 장면</button>
+  <button id="next" type="button">다음 장면 ▶</button>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+(function(){var v=Date.now();var s=document.createElement("script");s.src="common.js?v="+v;s.onload=init;document.body.appendChild(s);})();
+function init() {
+  // 장면별 '지금 화면에 무엇이 보이는지' — 대본이 아니라 상황 안내입니다
+  const K = {
+    1: { name: '① 다각형의 대각선의 개수', hints: [
+      '제목만 보입니다 — "오늘은 대각선의 개수" 인사·소개',
+      '오각형이 나타납니다 — 오각형을 예로 들겠다고 소개',
+      '공식 n × (n − 3) ÷ 2 가 나타납니다 — 공식을 한 번 읽어 주기',
+      '꼭짓점에 1·2·3·4·5 숫자가 하나씩 붙고 n 이 깜박입니다 — n 은 꼭짓점 개수',
+      '오른쪽에 n = 5 가 나타납니다',
+      '꼭짓점 A 가 노랗게, "나 자신 ✕" — 자기 자신에게는 못 귋는다',
+      '양옆 B·E 로 가는 변에 "변 ✕" — 옆 두 개는 변이지 대각선이 아니다',
+      '남은 두 꼭짓점 C·D 로 대각선 2개가 그어집니다 — 그래서 n − 3',
+      '오른쪽에 5 − 3 = 2 가 나타납니다',
+      '모든 꼭짓점에서 대각선이 차례로 그어지고 × 가 깜박입니다 — 꼭짓점마다 (n − 3)개씩',
+      '오른쪽에 5 × 2 = 10 이 나타납니다',
+      'A→C 와 C→A 화살표가 같은 선 위에서 깜박입니다 — 한 선을 두 번 셈다',
+      '오른쪽에 10 ÷ 2 = 5 가 나타납니다',
+      '공식이 완성되고 = 5 — 오각형 대각선은 5개',
+      '꼭 외우기 메모만 보입니다 — ①②③ 정리하며 마무리' ] },
+    2: { name: '② 삼각형의 내각과 외각', hints: [
+      '제목만 보입니다 — "삼각형의 내각과 외각" 소개',
+      '삼각형 ABC 가 나타납니다',
+      '공식 ∠A + ∠B = 외각 이 나타납니다 — 읽어 주기',
+      '∠A 60°, ∠B 70° 가 색칠되며 깜박입니다 — 두 내각',
+      '오른쪽에 60° + 70° 가 나타납니다',
+      '변 AC 가 C 너머로 점선으로 늘어납니다 — 쭉 늘리면',
+      'C 바깥쪽에 초록 외각 ? 가 나타납니다 — 이 각이 외각',
+      '? 가 130° 로 바뀝고 식이 완성됩니다 — 60 + 70 = 130',
+      '꼭 외우기 메모만 보입니다 — ①②③ 정리' ] },
+    3: { name: '③ 다각형의 내각의 합', hints: [
+      '제목만 보입니다 — "다각형의 내각의 합" 소개',
+      '육각형이 나타납니다',
+      '공식 180° × (n − 2) 가 나타납니다 — 읽어 주기',
+      'A 에서 대각선 하나, 분홍 삼각형 1개에 180° — 삼각형 하나는 180°',
+      '삼각형이 2·3·4개 차례로 색칠됩니다 — 육각형 안에 삼각형 4개',
+      '오른쪽에 "항상 n − 2개 → 6 − 2 = 4" — 왜 항상 n − 2 인지',
+      '오른쪽에 180° × 4 = 720°',
+      '공식이 완성됩니다 — 정리',
+      '꼭 외우기 메모만 보입니다 — ①②③ 정리' ] }
+  };
+  const $ = id => document.getElementById(id);
+  const store = makeStore();
+  let k = 1, n = 0, have = {}, blob = null, mime = '', rec = null, chunks = [], t0 = 0, url = null;
+  $('who').textContent = MOCK ? '(연습 모드: 저장 안 됨)' : '';
+
+  function steps() { return K[k].hints.length; }
+  function drawKs() { $('ks').innerHTML = [1, 2, 3].map(x => '<button type="button" data-k="' + x + '" class="' + (x === k ? 'on' : '') + '">' + K[x].name + '</button>').join(''); }
+  function drawDots() { $('dots').innerHTML = K[k].hints.map((h, i) => '<span class="' + (have[i] ? 'has ' : '') + (i === n ? 'cur' : '') + '">' + (i + 1) + '</span>').join(''); }
+  function drawScene() {
+    $('st').textContent = '장면 ' + (n + 1) + ' / ' + steps() + (have[n] ? ' · 녹음 있음 ✓' : ' · 아직 녹음 없음');
+    $('hint').textContent = K[k].hints[n];
+    $('prev').disabled = n === 0; $('next').textContent = n === steps() - 1 ? '다음 공식 ▶' : '다음 장면 ▶';
+    drawDots();
+    const f = $('ifr'), want = 'math' + k + '.html?rec&step=' + n + (MOCK ? '&mock' : '');
+    try { if (f.contentWindow && f.contentWindow.VID && f.contentWindow.VID.k === k) { f.contentWindow.VID.go(n); return; } } catch (e) { }
+    f.src = want;
+  }
+  function clearTake() { blob = null; if (url) URL.revokeObjectURL(url); url = null; $('play').disabled = true; $('save').disabled = true; $('rec').textContent = '⏺ 녹음 시작'; $('rec').classList.remove('live'); }
+  async function loadHave() { have = {}; const v = await store.get(BASE + '/voice/' + k); if (v) Object.keys(v).forEach(i => { if (v[i] && v[i].d) have[i] = true; }); drawScene(); }
+  function go(kk, nn) { k = kk; n = nn; clearTake(); drawKs(); $('msg').textContent = ''; loadHave(); drawScene(); }
+
+  $('ks').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (b) go(Number(b.dataset.k), 0); });
+  $('prev').addEventListener('click', () => { if (n > 0) go(k, n - 1); });
+  $('next').addEventListener('click', () => { if (n < steps() - 1) go(k, n + 1); else if (k < 3) go(k + 1, 0); else $('msg').textContent = '마지막 장면이에요. 세 공식 모두 끝!'; });
+
+  // 녹음: 누르면 시작, 다시 누르면 끝
+  $('rec').addEventListener('click', async () => {
+    if (rec && rec.state === 'recording') { rec.stop(); return; }
+    try {
+      const ms = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mime = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', ''].find(m => !m || (window.MediaRecorder && MediaRecorder.isTypeSupported(m)));
+      rec = mime ? new MediaRecorder(ms, { mimeType: mime, audioBitsPerSecond: 40000 }) : new MediaRecorder(ms, { audioBitsPerSecond: 40000 });
+      chunks = []; t0 = Date.now();
+      rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+      rec.onstop = () => {
+        ms.getTracks().forEach(t => t.stop());
+        blob = new Blob(chunks, { type: rec.mimeType || mime || 'audio/mp4' }); mime = blob.type;
+        url = URL.createObjectURL(blob);
+        $('rec').textContent = '⏺ 다시 녹음'; $('rec').classList.remove('live');
+        $('play').disabled = false; $('save').disabled = false;
+        $('msg').textContent = Math.round((Date.now() - t0) / 1000) + '초 · ' + Math.round(blob.size / 1024) + 'KB — 들어보고 괜찮으면 저장을 눌러요';
+        $('msg').classList.remove('err');
+      };
+      rec.start();
+      $('rec').textContent = '⏹ 녹음 끝'; $('rec').classList.add('live'); $('msg').textContent = '녹음 중… 말씀하세요'; $('msg').classList.remove('err');
+      $('play').disabled = true; $('save').disabled = true;
+    } catch (e) { $('msg').textContent = '마이크를 쓸 수 없어요: ' + (e.message || e); $('msg').classList.add('err'); }
+  });
+  $('play').addEventListener('click', () => { if (url) new Audio(url).play(); });
+  $('save').addEventListener('click', () => {
+    if (!blob) return;
+    if (blob.size > 900 * 1024) { $('msg').textContent = '너무 길어요(900KB 넘음). 조금 짧게 다시 녹음해 주세요'; $('msg').classList.add('err'); return; }
+    const r = new FileReader();
+    r.onload = async () => {
+      try {
+        await store.set(BASE + '/voice/' + k + '/' + n, { d: r.result, mime: mime, ms: Date.now() - t0, t: store.now ? store.now() : Date.now() });
+        have[n] = true; $('msg').textContent = '저장했어요 ✓ 아이들 화면에서 바로 나옵니다'; $('msg').classList.remove('err');
+        $('save').disabled = true; drawScene();
+      } catch (e) { $('msg').textContent = '저장 실패: ' + (e.message || e); $('msg').classList.add('err'); }
+    };
+    r.readAsDataURL(blob);
+  });
+  go(1, 0);
+}
+</script>
+</body>
+</html>

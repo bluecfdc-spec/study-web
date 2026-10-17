@@ -2,6 +2,7 @@
 // 페이지 쪽은 window.VID = { k, go, steps, cur, onChange } 를 내보냅니다. 기록: classes/gusan1/mathvid/{학생}/{k} = { step, ans:{0,1,2}, done }
 (function () {
   if (typeof VID === 'undefined' || typeof makeStore !== 'function') return;
+  if (new URLSearchParams(location.search).has('rec')) return;   // 녹음용 화면에서는 문제·저장 없음
   const Q = {
     1: [
       { q: '칠각형의 대각선은 모두 몇 개일까요?', c: ['7개', '10개', '14개', '21개'], a: 2, why: '칠각형은 n = 7. 공식에 넣으면 7 × (7 − 3) ÷ 2 = 7 × 4 ÷ 2 = 14개예요. 21은 2로 나누기 전 숫자(한 선을 두 번 센 것)이니 조심!' },
@@ -44,7 +45,6 @@
     document.querySelectorAll('.row,.memo,hr').forEach(e => { e.style.display = on ? 'none' : ''; });
     quiz.classList.toggle('on', on);
     $('prev').style.visibility = on ? 'hidden' : '';
-    $('auto').parentElement.style.visibility = on ? 'hidden' : '';
   }
   function drawQuiz() {
     const ans = rec.ans || {};
@@ -83,6 +83,7 @@
     if (qi >= Q.length) { save({ done: store.now(), q: qi }); drawQuiz(); } else { save({ q: qi }); drawQuiz(); }
   }, true);
   $('prev').addEventListener('click', e => { if (quiz.classList.contains('on')) { e.stopImmediatePropagation(); showQuiz(false); $('next').disabled = false; VID.go(VID.cur()); } }, true);
+  $('home').addEventListener('click', () => { if (quiz.classList.contains('on')) { showQuiz(false); $('next').disabled = false; } }, true);
 
   // 마지막 설명 단계에서는 '처음부터' 대신 '문제 풀기'
   const cur = VID.onChange;

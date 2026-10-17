@@ -26,7 +26,7 @@
 <div class="bar">
   <button id="prev" type="button">← 이전</button>
   <span class="step" id="stepNo"></span>
-  <label class="auto"><input type="checkbox" id="auto"> 자동</label>
+  <button id="home" type="button">처음으로</button>
   <button id="next" class="go" type="button">다음 →</button>
 </div>
 </main>
@@ -62,7 +62,7 @@
     { sec: 5, run: () => { unblink(); $('vX').textContent = '130°'; show('b2', 'aR'); ['fE', 'fA', 'fB'].forEach(id => on(id, 'lit')); } },   // 130°
     { sec: 8, run: () => { show('memo'); } }                                                                      // 요약
   ];
-  let step = -1, autoT = null, timers = [];
+  let step = -1, timers = [];
   function reset() { $('vX').textContent = '?'; document.querySelectorAll('.blink,.show,.lit').forEach(e => e.classList.remove('blink', 'show', 'lit')); }
   function go(n) {
     if (n < 0 || n >= STEPS.length) return;
@@ -73,21 +73,23 @@
     $('stepNo').textContent = (n + 1) + ' / ' + STEPS.length;
     $('prev').disabled = n === 0; $('next').textContent = n === STEPS.length - 1 ? '처음부터' : '다음 →';
     if (window.VID && VID.onChange) VID.onChange(n);
-    clearTimeout(autoT); if ($('auto').checked) autoT = setTimeout(() => go((step + 1) % STEPS.length), STEPS[n].sec * 1000);
   }
   $('next').addEventListener('click', () => go((step + 1) % STEPS.length));
   $('prev').addEventListener('click', () => go(step - 1));
-  $('auto').addEventListener('change', () => go(step));
+  $('home').addEventListener('click', () => go(0));
   document.addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); $('next').click(); } if (e.key === 'ArrowLeft') $('prev').click(); });
   window.VID = { k: 2, go: go, steps: STEPS.length, cur: () => step, onChange: null };
-  go(0);
+  // ?step=N 으로 특정 장면부터, ?rec 는 녹음용(버튼 숨김)
+  const Q0 = new URLSearchParams(location.search);
+  if (Q0.has('rec')) document.body.classList.add('rec');
+  go(Math.min(parseInt(Q0.get('step')) || 0, STEPS.length - 1));
 })();
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 // 항상 최신 파일을 받아 오도록 주소 뒤에 시간을 붙여 불러옵니다
-(function(){var v=Date.now();["common.js","mathquiz.js"].reduce(function(p,f){return p.then(function(){return new Promise(function(ok){var s=document.createElement("script");s.src=f+"?v="+v;s.onload=ok;document.body.appendChild(s);});});},Promise.resolve());})();
+(function(){var v=Date.now();["common.js","mathquiz.js","mathvoice.js"].reduce(function(p,f){return p.then(function(){return new Promise(function(ok){var s=document.createElement("script");s.src=f+"?v="+v;s.onload=ok;document.body.appendChild(s);});});},Promise.resolve());})();
 </script>
 </body>
 </html>
