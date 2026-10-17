@@ -8,8 +8,8 @@
 <style>
 :root{--bg:#FFF4EE;--fg:#4A3B47;--sub:#8A7584;--pink:#F29BB5;--mint:#58B894;--mintL:#BFE8D9;--yellow:#F2B24C;--yellowL:#FFE39A;--red:#E5484D;--display:"Jua","Noto Sans KR",sans-serif;--body:"Noto Sans KR","Apple SD Gothic Neo",sans-serif}
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;overflow:hidden}
-body{height:100dvh;background:var(--bg);color:var(--fg);font-family:var(--body);display:flex;flex-direction:column;padding:8px 10px;gap:8px}
+html,body{margin:0}
+body{min-height:100dvh;background:var(--bg);color:var(--fg);font-family:var(--body);display:flex;flex-direction:column;padding:8px 10px 24px;gap:8px}
 h1{font-family:var(--display);font-weight:400;font-size:20px;margin:0;display:flex;align-items:center;gap:10px}
 h1 small{font-family:var(--body);font-size:13px;color:var(--sub);font-weight:400}
 .ks{display:flex;gap:6px}
@@ -22,9 +22,10 @@ h1 small{font-family:var(--body);font-size:13px;color:var(--sub);font-weight:400
 .scene{background:#fff;border-radius:16px;padding:10px 14px;display:flex;flex-direction:column;gap:2px}
 .scene b{font-family:var(--display);font-weight:400;font-size:18px}
 .scene span{font-size:14px;color:var(--sub);line-height:1.45}
-.frame{flex:1;min-height:0;border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 0 0 3px #E8D6D9}
+.frame{height:72vh;min-height:420px;border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 0 0 3px #E8D6D9;flex:none}
 iframe{width:100%;height:100%;border:0;display:block;pointer-events:none}
-.ctl{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tip{font-size:12px;color:var(--sub);text-align:center}
+.ctl{display:grid;grid-template-columns:1fr 1fr;gap:8px;position:sticky;bottom:8px;background:var(--bg);padding:6px 0;border-radius:18px}
 .ctl button{min-height:56px;border:none;border-radius:16px;background:#fff;font:inherit;font-weight:700;font-size:17px;color:var(--fg)}
 .ctl button:disabled{opacity:.35}
 #rec{grid-column:1/-1;background:var(--red);color:#fff;font-size:20px;min-height:64px}
@@ -43,8 +44,9 @@ iframe{width:100%;height:100%;border:0;display:block;pointer-events:none}
 <h1>🎙 선생님 목소리 녹음 <small id="who"></small></h1>
 <div class="ks" id="ks"></div>
 <div class="dots" id="dots"></div>
-<div class="scene"><b id="st"></b><span id="hint"></span></div>
+<div class="scene"><b id="st"></b><span id="hint" style="display:none"></span></div>
 <div class="frame"><iframe id="ifr" title="장면 미리보기"></iframe></div>
+<div class="tip">↑ 아이들이 보는 화면 그대로예요. 보면서 말씀하시면 됩니다 (아래로 내리면 녹음 버튼)</div>
 <div class="msg" id="msg"></div>
 <div class="ctl">
   <button id="rec" type="button">⏺ 녹음 시작</button>
