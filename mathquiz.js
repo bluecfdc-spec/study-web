@@ -26,7 +26,7 @@
   let rec = {}, qi = -1, picked = null, loaded = false;
 
   document.head.insertAdjacentHTML('beforeend', '<style>' +
-    '#quiz{display:none;flex-direction:column;gap:14px;max-width:560px;width:100%;margin:0 auto}#quiz.on{display:flex}' +
+    '#quiz{display:none;flex-direction:column;gap:12px;max-width:560px;width:100%;margin:0 auto;flex:1;min-height:0;overflow:auto;justify-content:center}#quiz.on{display:flex}' +
     '.qz-top{display:flex;justify-content:space-between;font-size:15px;color:var(--sub)}' +
     '.qz-q{background:#fff;border-radius:22px;padding:18px 20px;font-size:clamp(19px,2.6vw,24px);line-height:1.5;word-break:keep-all}' +
     '.qz-c{display:grid;grid-template-columns:1fr 1fr;gap:10px}.qz-c button{min-height:64px;border-radius:18px;font-size:20px;border:4px solid transparent;background:#fff}' +
@@ -34,7 +34,7 @@
     '.qz-why{background:var(--yellowL);border-radius:18px;padding:14px 18px;font-size:clamp(16px,2.2vw,20px);line-height:1.6;word-break:keep-all}' +
     '.qz-why b{display:block;margin-bottom:4px}.qz-done{background:var(--mintL);border-radius:22px;padding:22px;text-align:center;font-family:var(--display);font-size:30px;line-height:1.4}' +
     '.qz-done small{display:block;font-family:var(--body);font-size:16px;color:var(--sub);margin-top:6px}' +
-    '@media (max-width:680px){.memo{white-space:normal}svg{max-height:46vh}}</style>');
+    '@media (max-width:680px){.qz-q{padding:12px 14px;font-size:17px}.qz-c button{min-height:52px;font-size:17px}.qz-why{padding:10px 14px;font-size:14px;line-height:1.5}.qz-done{font-size:24px;padding:14px}#quiz{gap:8px}}</style>');
   const main = document.querySelector('main'), bar = document.querySelector('.bar');
   const quiz = document.createElement('div'); quiz.id = 'quiz'; main.insertBefore(quiz, bar);
   const $ = id => document.getElementById(id);
@@ -86,7 +86,7 @@
 
   // 마지막 설명 단계에서는 '처음부터' 대신 '문제 풀기'
   const cur = VID.onChange;
-  VID.onChange = n => { if (cur) cur(n); if (n === VID.steps - 1) { $('next').textContent = '문제 풀기 (3문제) →'; VID.atEnd = true; } else VID.atEnd = false; if (loaded && path) store.update(path, { step: n }); };
+  VID.onChange = n => { if (cur) cur(n); document.body.classList.toggle('final', n === VID.steps - 1); if (n === VID.steps - 1) { $('next').textContent = (innerWidth <= 680 ? '문제 풀기 →' : '문제 풀기 (3문제) →'); VID.atEnd = true; } else VID.atEnd = false; if (loaded && path) store.update(path, { step: n }); };
 
   // 이어 보기: 저장된 단계·문제로
   async function load() {

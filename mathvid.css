@@ -70,3 +70,32 @@ button:disabled{opacity:.4;cursor:default}
 .cnt{font-family:var(--display);font-size:26px;fill:var(--yellow);text-anchor:middle;opacity:0}.cnt.show{opacity:1}
 .tn{font-family:var(--display);font-size:30px;fill:var(--fg);text-anchor:middle;opacity:0}.tn.show{opacity:1}
 .deg{font-family:var(--display);font-size:20px;fill:#1F5C45;text-anchor:middle;opacity:0}.deg.show{opacity:1}
+/* === 한 화면에 다 담기: 스크롤 없음. 마지막(꼭 외우기) 단계에서는 그림·식을 치우고 메모만 보여 줍니다 === */
+html,body{height:100%;overflow:hidden}
+body{height:100dvh;padding-block:8px}
+main{min-height:0;overflow:hidden;gap:10px}
+.row{flex:1;min-height:0}
+.side{min-height:0}
+svg{max-height:100%}
+.bar{flex:none;padding-top:4px}
+body.final .row,body.final hr{display:none}
+body.final .memo{white-space:normal;overflow:visible;text-overflow:clip;flex:none;margin:auto 0;font-size:clamp(18px,2.6vw,30px);line-height:1.9;padding:22px 28px}
+body.final .memo small{font-size:.8em;margin-bottom:12px}
+@media (max-width:680px){
+  body{padding-block:6px;padding-left:10px;padding-right:10px}
+  main{gap:6px}
+  h1{font-size:clamp(22px,7vw,30px)}
+  .row{grid-template-rows:minmax(0,1fr) auto;gap:6px;align-items:start}
+  svg{max-height:100%;height:100%;width:auto;margin:0 auto}
+  .side{gap:8px}
+  .formula{font-size:clamp(26px,8vw,36px)}
+  .asm{font-size:clamp(22px,7vw,32px)}
+  .build{gap:2px}
+  .build .l{font-size:clamp(15px,4.6vw,20px)}
+  .memo{padding:10px 14px;font-size:14px;line-height:1.55}
+  body.final .memo{font-size:clamp(15px,4.4vw,20px);line-height:1.7;padding:14px 16px}
+  body.final .memo small{margin-bottom:8px}
+  .bar{gap:6px;flex-wrap:nowrap}
+  button{min-height:44px;padding:0 12px;font-size:15px;white-space:nowrap}
+  .auto{font-size:13px}
+}
