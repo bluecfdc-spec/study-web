@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>크림이네 공부방 · 대각선의 개수 설명</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap">
-<link rel="stylesheet" href="mathvid.css">
+<script>document.write('<link rel="stylesheet" href="mathvid.css?v=' + Date.now() + '">');</script>
 </head>
 <body>
 <main>
@@ -102,7 +102,9 @@
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="common.js"></script>
-<script src="mathquiz.js"></script>
+<script>
+// 항상 최신 파일을 받아 오도록 주소 뒤에 시간을 붙여 불러옵니다
+(function(){var v=Date.now();["common.js","mathquiz.js"].reduce(function(p,f){return p.then(function(){return new Promise(function(ok){var s=document.createElement("script");s.src=f+"?v="+v;s.onload=ok;document.body.appendChild(s);});});},Promise.resolve());})();
+</script>
 </body>
 </html>

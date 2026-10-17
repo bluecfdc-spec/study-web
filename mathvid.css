@@ -85,9 +85,9 @@ body.final .memo small{font-size:.8em;margin-bottom:12px}
   body{padding-block:6px;padding-left:10px;padding-right:10px}
   main{gap:6px}
   h1{font-size:clamp(22px,7vw,30px)}
-  /* 사파리에서 svg 높이 100% 가 안 먹어 그림이 식 위로 겹치던 문제: 그림 높이를 vh 로 못 박고 세로 flex 로 쌓습니다 */
+  /* 사파리에서 svg 높이 100% 가 안 먹어 그림이 식 위로 겹치던 문제: 그림 높이를 vh 로 못 박고 세로 flex 로 주습니다 */
   .row{display:flex;flex-direction:column;gap:8px;align-items:stretch;flex:none}
-  svg{flex:none;height:min(34vh,300px);max-height:none;width:100%;margin:0}
+  svg{flex:none;height:32vh;max-height:300px;width:100%;margin:0}
   .side{flex:none;gap:8px}
   .formula{font-size:clamp(26px,8vw,36px)}
   .asm{font-size:clamp(22px,7vw,32px)}
