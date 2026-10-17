@@ -13,7 +13,7 @@ body{height:100dvh;background:var(--bg);color:var(--fg);font-family:var(--body);
 h1{font-family:var(--display);font-weight:400;font-size:20px;margin:0;display:flex;align-items:center;gap:10px}
 h1 small{font-family:var(--body);font-size:13px;color:var(--sub);font-weight:400}
 .ks{display:flex;gap:6px}
-.ks button{flex:1;min-height:40px;border:none;border-radius:12px;background:#fff;font:inherit;font-weight:700;color:var(--fg);font-size:14px}
+.ks button{flex:1;min-height:40px;border:none;border-radius:12px;background:#fff;font:inherit;font-weight:700;color:var(--fg);font-size:13px;padding:0 4px}
 .ks button.on{background:var(--yellowL);box-shadow:inset 0 0 0 3px var(--yellow)}
 .dots{display:flex;gap:4px;flex-wrap:wrap}
 .dots span{width:22px;height:22px;border-radius:50%;background:#F1E2DE;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--sub)}
@@ -97,6 +97,17 @@ function init() {
       '오른쪽에 "항상 n − 2개 → 6 − 2 = 4" — 왜 항상 n − 2 인지',
       '오른쪽에 180° × 4 = 720°',
       '공식이 완성됩니다 — 정리',
+      '꼭 외우기 메모만 보입니다 — ①②③ 정리' ] },
+    4: { name: '④ 다각형의 외각의 합', hints: [
+      '제목만 보입니다 — "다각형의 외각의 합" 소개',
+      '오각형이 나타납니다',
+      '공식 외각의 합 = 360° 가 나타납니다 — 읽어 주기 (몇 각형이든 360°)',
+      'A 에서 변이 점선으로 늘어나 깜빡입니다 — 변을 쭉 늘리면',
+      'A 에 회색 내각 108° 와 분홍 외각 72° 가 깜빡이고, 오른쪽에 "내각 + 외각 = 180°"',
+      '나머지 네 꼭짓점에도 내각·외각이 차례로 생기고, 오른쪽에 "180° × 5 = 900°"',
+      '다섯 내각이 깜빡이고 오른쪽에 "내각의 합 180° × (5 − 2) = 540°"',
+      '다섯 외각이 깜빡이고 오른쪽에 "900° − 540° = 360°"',
+      '내각이 사라지고 가운데 외각 다섯 개가 모여 한 바퀴(360°)가 됩니다 — 공식 완성',
       '꼭 외우기 메모만 보입니다 — ①②③ 정리' ] }
   };
   const $ = id => document.getElementById(id);
@@ -105,7 +116,7 @@ function init() {
   $('who').textContent = MOCK ? '(연습 모드: 저장 안 됨)' : '';
 
   function steps() { return K[k].hints.length; }
-  function drawKs() { $('ks').innerHTML = [1, 2, 3].map(x => '<button type="button" data-k="' + x + '" class="' + (x === k ? 'on' : '') + '">' + K[x].name + '</button>').join(''); }
+  function drawKs() { $('ks').innerHTML = [1, 2, 3, 4].map(x => '<button type="button" data-k="' + x + '" class="' + (x === k ? 'on' : '') + '">' + K[x].name + '</button>').join(''); }
   function drawDots() { $('dots').innerHTML = K[k].hints.map((h, i) => '<span class="' + (have[i] ? 'has ' : '') + (i === n ? 'cur' : '') + '">' + (i + 1) + '</span>').join(''); }
   function drawScene() {
     $('st').textContent = '장면 ' + (n + 1) + ' / ' + steps() + (have[n] ? ' · 녹음 있음 ✓' : ' · 아직 녹음 없음');
@@ -122,7 +133,7 @@ function init() {
 
   $('ks').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (b) go(Number(b.dataset.k), 0); });
   $('prev').addEventListener('click', () => { if (n > 0) go(k, n - 1); });
-  $('next').addEventListener('click', () => { if (n < steps() - 1) go(k, n + 1); else if (k < 3) go(k + 1, 0); else $('msg').textContent = '마지막 장면이에요. 세 공식 모두 끝!'; });
+  $('next').addEventListener('click', () => { if (n < steps() - 1) go(k, n + 1); else if (k < 4) go(k + 1, 0); else $('msg').textContent = '마지막 장면이에요. 네 공식 모두 끝!'; });
 
   // 녹음: 누르면 시작, 다시 누르면 끝
   $('rec').addEventListener('click', async () => {
