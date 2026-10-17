@@ -163,6 +163,7 @@
     return '';
   }
 
+  window.LX = { FIG: FIG, sector: sector, T: T, LN: LN, DOT: DOT };   // 다른 파일(polygon.js)이 그림을 보태 쓸 수 있게
   window.lessonMax = maxOf;
   window.lessonHTML = function () {
     const L = LESSONS[live.lessonId], pi = live.page, st = live.step || 0, total = L.pages.length;
