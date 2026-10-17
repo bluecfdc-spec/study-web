@@ -39,6 +39,10 @@
   const X = window.LX;
   if (!X) return;
   const T = X.T;
+  // 분류표는 글자가 많아 화면 폭에 꽉 차게 키우고, 설명은 표 아래로 내립니다
+  document.head.insertAdjacentHTML('beforeend', '<style>.lx-fig.wide{flex-direction:column}.lx-fig.wide svg{width:min(92vw,1500px)}.lx-fig.wide .lx-side{max-width:1100px}</style>');
+  const body0 = window.lessonHTML;
+  window.lessonHTML = function () { const h = body0(); return (live && LESSONS[live.lessonId] && (LESSONS[live.lessonId].pages[live.page] || {}).fig === 'pos9') ? h.replace('class="lx-fig"', 'class="lx-fig wide"') : h; };
   const C = { mint: '#BFE8D9', pink: '#FFC9D6', yellow: '#FFE39A', blue: '#CFE0FF', line: '#4A3B47', soft: '#F6EEF1', sub: '#6B5764' };
   const cell = (x, y, w, h, fill) => '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + (fill || '#fff') + '" stroke="' + C.line + '" stroke-width="2"/>';
   const Q = (x, y) => '<text x="' + x + '" y="' + y + '" font-size="18" text-anchor="middle" fill="#C9B6C2" font-weight="700">?</text>';
