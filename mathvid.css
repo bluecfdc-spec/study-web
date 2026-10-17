@@ -68,6 +68,9 @@ button:disabled{opacity:.4;cursor:default}
 .tri{opacity:0}.tri.show{opacity:1}
 .vx{fill:var(--fg)}.vx.me{fill:var(--yellow)}
 .cnt{font-family:var(--display);font-size:26px;fill:var(--yellow);text-anchor:middle;opacity:0}.cnt.show{opacity:1}
+/* 4번(외각의 합) */
+.pie{opacity:0}.pie.show{opacity:1}
+.asm.sm{font-size:clamp(26px,3.6vw,44px)}
 .tn{font-family:var(--display);font-size:30px;fill:var(--fg);text-anchor:middle;opacity:0}.tn.show{opacity:1}
 .deg{font-family:var(--display);font-size:20px;fill:#1F5C45;text-anchor:middle;opacity:0}.deg.show{opacity:1}
 /* === 한 화면에 다 담기: 스크롤 없음. 마지막(꼭 외우기) 단계에서는 그림·식을 치우고 메모만 보여 줍니다 === */
@@ -93,6 +96,7 @@ body.final .memo small{font-size:.8em;margin-bottom:12px}
   .side{flex:none;gap:8px}
   .formula{font-size:clamp(26px,8vw,36px)}
   .asm{font-size:clamp(22px,7vw,32px)}
+  .asm.sm{font-size:clamp(18px,5.4vw,26px)}
   .build{gap:2px}
   .build .l{font-size:clamp(15px,4.6vw,20px)}
   .memo{padding:10px 14px;font-size:14px;line-height:1.55}
