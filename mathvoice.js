@@ -5,8 +5,8 @@
   if (typeof VID === 'undefined' || typeof makeStore !== 'function') return;
   if (new URLSearchParams(location.search).has('rec')) return;   // 녹음용 화면에서는 재생 안 함
   const store = makeStore();
-  const clips = {};          // 장면 번호 → Audio
-  let cur = null, ready = false, nextText = '';
+  const clips = {}, lens = {};   // 장면 번호 → Audio, 녹음 길이(ms)
+  let cur = null, ready = false, nextText = '', guard = null;
   const $ = id => document.getElementById(id);
   const bar = document.querySelector('.bar'), next = $('next');
   document.head.insertAdjacentHTML('beforeend', '<style>' +
@@ -26,17 +26,18 @@
     if (!quizOn()) next.disabled = false;
     setTimeout(() => { if (!cur) { prog.classList.remove('on'); fill.style.width = '0'; } }, 400);
   }
-  function stop() { if (cur) { const a = cur; cur = null; try { a.pause(); a.currentTime = 0; } catch (e) { } } unlock(); }
+  function stop() { clearTimeout(guard); if (cur) { const a = cur; cur = null; try { a.pause(); a.currentTime = 0; } catch (e) { } } unlock(); }
   function play(n) {
     stop();
-    const a = clips[n]; if (!a) { btn.classList.remove('on'); return; }
+    const a = clips[n]; if (!a) { btn.classList.remove('on'); prog.classList.remove('on'); fill.style.width = '0'; return; }   // 녹음 없는 장면: 막대 없이 바로 다음
     btn.classList.add('on'); cur = a; fill.style.width = '0';
     const p = a.play(); if (p && p.catch) p.catch(() => { if (cur === a) { cur = null; unlock(); } });   // 자동 재생이 막히면 🔊 버튼으로
   }
+  const len = a => { for (const n in clips) if (clips[n] === a) { const d = lens[n] ? lens[n] / 1000 : 0; return (isFinite(a.duration) && a.duration > 0) ? a.duration : d; } return 0; };
   function wire(a) {
-    a.addEventListener('playing', () => { if (cur === a) lock(); });
-    a.addEventListener('timeupdate', () => { if (cur === a && a.duration) fill.style.width = Math.min(100, a.currentTime / a.duration * 100) + '%'; });
-    a.addEventListener('ended', () => { if (cur === a) { fill.style.width = '100%'; cur = null; unlock(); } });
+    a.addEventListener('playing', () => { if (cur === a) { lock(); clearTimeout(guard); const d = len(a); if (d) guard = setTimeout(() => { if (cur === a) { cur = null; unlock(); } }, d * 1000 + 1500); } });   // 끝 신호가 안 와도 길이만큼 지나면 풀어 줌
+    a.addEventListener('timeupdate', () => { const d = len(a); if (cur === a && d) fill.style.width = Math.min(100, a.currentTime / d * 100) + '%'; });
+    a.addEventListener('ended', () => { if (cur === a) { clearTimeout(guard); fill.style.width = '100%'; cur = null; unlock(); } });
     a.addEventListener('error', () => { if (cur === a) { cur = null; unlock(); } });
   }
   btn.addEventListener('click', () => play(VID.cur()));
@@ -46,7 +47,7 @@
   VID.onChange = n => { if (prev) prev(n); if (ready) play(n); };
 
   store.get(BASE + '/voice/' + VID.k).then(v => {
-    if (v) Object.keys(v).forEach(n => { if (v[n] && v[n].d) { const a = new Audio(v[n].d); a.preload = 'auto'; wire(a); clips[n] = a; } });
+    if (v) Object.keys(v).forEach(n => { if (v[n] && v[n].d) { const a = new Audio(v[n].d); a.preload = 'auto'; wire(a); clips[n] = a; lens[n] = v[n].ms || 0; } });
     ready = true;
     play(VID.cur());
   }).catch(() => { ready = true; });

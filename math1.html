@@ -89,6 +89,7 @@
     step = n;
     $('stepNo').textContent = (n + 1) + ' / ' + STEPS.length;
     $('prev').disabled = n === 0; $('next').textContent = n === STEPS.length - 1 ? '처음부터' : '다음 →';
+    document.body.classList.toggle('final', n === STEPS.length - 1);   // 마지막(꼭 외우기) 장면: 메모만 보이기
     if (window.VID && VID.onChange) VID.onChange(n);
   }
   $('next').addEventListener('click', () => go((step + 1) % STEPS.length));
