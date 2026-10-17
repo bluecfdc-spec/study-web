@@ -130,7 +130,7 @@ function init() {
     try { if (f.contentWindow && f.contentWindow.VID && f.contentWindow.VID.k === k) { f.contentWindow.VID.go(n); return; } } catch (e) { }
     f.src = want;
   }
-  function clearTake() { blob = null; if (url) URL.revokeObjectURL(url); url = null; $('play').disabled = true; $('save').disabled = true; $('rec').textContent = '⏺ 녹음 시작'; $('rec').classList.remove('live'); }
+  function clearTake() { if (typeof stopPv === 'function') stopPv(); blob = null; if (url) URL.revokeObjectURL(url); url = null; $('play').disabled = true; $('save').disabled = true; $('rec').textContent = '⏺ 녹음 시작'; $('rec').classList.remove('live'); }
   async function loadHave() { have = {}; const v = await store.get(BASE + '/voice/' + k); if (v) Object.keys(v).forEach(i => { if (v[i] && v[i].d) have[i] = true; }); drawScene(); }
   function go(kk, nn) { k = kk; n = nn; clearTake(); drawKs(); $('msg').textContent = ''; loadHave(); drawScene(); }
 
@@ -141,6 +141,7 @@ function init() {
   // 녹음: 누르면 시작, 다시 누르면 끝
   $('rec').addEventListener('click', async () => {
     if (rec && rec.state === 'recording') { rec.stop(); return; }
+    stopPv();
     try {
       const ms = await navigator.mediaDevices.getUserMedia({ audio: true });
       mime = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', ''].find(m => !m || (window.MediaRecorder && MediaRecorder.isTypeSupported(m)));
@@ -161,7 +162,15 @@ function init() {
       $('play').disabled = true; $('save').disabled = true;
     } catch (e) { $('msg').textContent = '마이크를 쓸 수 없어요: ' + (e.message || e); $('msg').classList.add('err'); }
   });
-  $('play').addEventListener('click', () => { if (url) new Audio(url).play(); });
+  // 들어보기: 누르면 재생, 다시 누르면 멈춤. 녹음을 새로 시작하거나 장면을 옮기면 자동으로 멈춤
+  let pv = null;
+  function stopPv() { if (pv) { try { pv.pause(); } catch (e) { } pv = null; } $('play').textContent = '▶ 들어보기'; }
+  $('play').addEventListener('click', () => {
+    if (pv) { stopPv(); return; }
+    if (!url) return;
+    pv = new Audio(url); $('play').textContent = '⏹ 멈추기';
+    pv.onended = stopPv; pv.onerror = stopPv; pv.play();
+  });
   $('save').addEventListener('click', () => {
     if (!blob) return;
     if (blob.size > 900 * 1024) { $('msg').textContent = '너무 길어요(900KB 넘음). 조금 짧게 다시 녹음해 주세요'; $('msg').classList.add('err'); return; }
