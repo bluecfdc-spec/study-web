@@ -70,6 +70,8 @@ button:disabled{opacity:.4;cursor:default}
 .cnt{font-family:var(--display);font-size:26px;fill:var(--yellow);text-anchor:middle;opacity:0}.cnt.show{opacity:1}
 /* 4번(외각의 합) */
 .pie{opacity:0}.pie.show{opacity:1}
+.sec.gone{opacity:.15}.val.gone{opacity:.25}
+.xx{font-family:var(--display);font-size:38px;font-weight:700;fill:#E5484D;text-anchor:middle;opacity:0}.xx.show{opacity:1}
 .asm.sm{font-size:clamp(26px,3.6vw,44px)}
 .tn{font-family:var(--display);font-size:30px;fill:var(--fg);text-anchor:middle;opacity:0}.tn.show{opacity:1}
 .deg{font-family:var(--display);font-size:20px;fill:#1F5C45;text-anchor:middle;opacity:0}.deg.show{opacity:1}
