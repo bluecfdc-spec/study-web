@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>크림이네 공부방 · 삼각형의 외각 설명</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap">
+<link rel="stylesheet" href="mathvid.css">
+</head>
+<body>
+<main>
+<h1 id="ttl">삼각형의 <span class="k" id="kw">내각과 외각</span></h1>
+<div class="row">
+  <svg id="svg" viewBox="0 0 400 340" aria-label="삼각형 ABC"></svg>
+  <div class="side">
+    <div class="formula" id="fml"><span id="fA">∠A</span><span>+</span><span id="fB">∠B</span><span>=</span><span id="fE">외각</span></div>
+    <div class="asm"><span id="aA">60°</span><span id="aP">+</span><span id="aB">70°</span><span id="aQ">=</span><span id="aE">외각</span><span id="aR" class="eq">= 130°</span></div>
+    <hr id="rule">
+    <div class="build">
+      <div class="l" id="b1">∠A = <b>60°</b>, ∠B = <b>70°</b></div>
+      <div class="l" id="b2">60° + 70° = <b>130°</b></div>
+    </div>
+  </div>
+</div>
+<div class="memo" id="memo"><small><span class="must">꼭! 꼭! 꼭! 외우기</span> 공식의 의미</small><b>마주 보는 두 내각의 합</b> = <b>삼각형의 한 외각</b><br>① 일직선의 <b>평각은 180°</b><br>② 삼각형의 <b>세 내각의 합도 180°</b><br>③ 그래서 <b>외각은 마주 보는 두 내각의 합과 같다</b></div>
+<div class="bar">
+  <button id="prev" type="button">← 이전</button>
+  <span class="step" id="stepNo"></span>
+  <label class="auto"><input type="checkbox" id="auto"> 자동</label>
+  <button id="next" class="go" type="button">다음 →</button>
+</div>
+</main>
+<script>
+(function () {
+  // 삼각형 A(60°) B(70°) C(50°). 변 AC 를 C 너머로 연장해 C 의 외각을 만듭니다.
+  const A = [40, 290], B = [145.98, 106.45], C = [300, 290], E = [392, 290];
+  const P = (cx, cy, r, a) => (cx + r * Math.cos(a * Math.PI / 180)).toFixed(1) + ' ' + (cy - r * Math.sin(a * Math.PI / 180)).toFixed(1);
+  const sector = (c, r, a0, a1, color, id, op) => '<path class="sec" id="' + id + '" d="M' + c[0] + ' ' + c[1] + ' L' + P(c[0], c[1], r, a0) + ' A' + r + ' ' + r + ' 0 ' + ((a1 - a0) > 180 ? 1 : 0) + ' 0 ' + P(c[0], c[1], r, a1) + ' Z" fill="' + color + '" fill-opacity="' + (op || .55) + '" stroke="' + color + '" stroke-width="2"/>';
+  const ln = (a, b, cls, id) => '<line class="' + cls + '"' + (id ? ' id="' + id + '"' : '') + ' x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '"/>';
+  let h = '';
+  h += sector(A, 40, 0, 60, '#F29BB5', 'sA') + sector(B, 40, 240, 310, '#8DB8FF', 'sB');
+  h += sector(C, 48, 0, 130, '#58B894', 'sX');
+  h += ln(A, B, 'edge') + ln(B, C, 'edge') + ln(C, A, 'edge') + ln(C, E, 'ext', 'ext');
+  h += '<text class="lbl" x="24" y="316">A</text><text class="lbl" x="146" y="90">B</text><text class="lbl" x="300" y="320">C</text>';
+  h += '<text class="val p" id="vA" x="96" y="278">60°</text><text class="val b" id="vB" x="146" y="160">70°</text>';
+  h += '<text class="val m" id="vX" x="352" y="248">?</text>';
+  document.getElementById('svg').innerHTML = h;
+  const $ = id => document.getElementById(id);
+  const on = (id, c) => $(id).classList.add(c), off = (id, c) => $(id).classList.remove(c);
+  const show = function () { for (const id of arguments) on(id, 'show'); };
+  const blink = function () { for (const id of arguments) on(id, 'blink'); };
+  const unblink = () => document.querySelectorAll('.blink').forEach(e => e.classList.remove('blink'));
+
+  const STEPS = [
+    { sec: 4, run: () => { show('ttl'); blink('kw'); } },                                                         // 제목
+    { sec: 4, run: () => { show('svg'); } },                                                                      // 삼각형
+    { sec: 5, run: () => { off('kw', 'blink'); show('fml'); } },                                                  // 본 공식
+    { sec: 6, run: () => { blink('fA', 'fB'); show('sA', 'sB', 'vA', 'vB'); blink('sA', 'sB', 'vA', 'vB'); } },   // 두 내각 60°, 70°
+    { sec: 4, run: () => { unblink(); show('rule', 'b1', 'aA', 'aP', 'aB'); } },                      // 오른쪽에 60° + 70°
+    { sec: 5, run: () => { show('ext'); blink('ext'); } },                                                        // 변 AC 를 쭉 늘림
+    { sec: 5, run: () => { unblink(); blink('fE'); show('sX', 'vX', 'aQ', 'aE'); blink('sX', 'vX'); } },                      // 외각 ?
+    { sec: 5, run: () => { unblink(); $('vX').textContent = '130°'; show('b2', 'aR'); ['fE', 'fA', 'fB'].forEach(id => on(id, 'lit')); } },   // 130°
+    { sec: 8, run: () => { show('memo'); } }                                                                      // 요약
+  ];
+  let step = -1, autoT = null, timers = [];
+  function reset() { $('vX').textContent = '?'; document.querySelectorAll('.blink,.show,.lit').forEach(e => e.classList.remove('blink', 'show', 'lit')); }
+  function go(n) {
+    if (n < 0 || n >= STEPS.length) return;
+    reset();
+    for (let i = 0; i < n; i++) STEPS[i].run();
+    STEPS[n].run();
+    step = n;
+    $('stepNo').textContent = (n + 1) + ' / ' + STEPS.length;
+    $('prev').disabled = n === 0; $('next').textContent = n === STEPS.length - 1 ? '처음부터' : '다음 →';
+    if (window.VID && VID.onChange) VID.onChange(n);
+    clearTimeout(autoT); if ($('auto').checked) autoT = setTimeout(() => go((step + 1) % STEPS.length), STEPS[n].sec * 1000);
+  }
+  $('next').addEventListener('click', () => go((step + 1) % STEPS.length));
+  $('prev').addEventListener('click', () => go(step - 1));
+  $('auto').addEventListener('change', () => go(step));
+  document.addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); $('next').click(); } if (e.key === 'ArrowLeft') $('prev').click(); });
+  window.VID = { k: 2, go: go, steps: STEPS.length, cur: () => step, onChange: null };
+  go(0);
+})();
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="common.js"></script>
+<script src="mathquiz.js"></script>
+</body>
+</html>

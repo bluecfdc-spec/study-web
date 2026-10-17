@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>크림이네 공부방 · 대각선의 개수 설명</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap">
+<link rel="stylesheet" href="mathvid.css">
+</head>
+<body>
+<main>
+<h1 id="ttl">다각형의 <span class="k" id="kw">대각선의 개수</span></h1>
+<div class="row">
+  <svg id="svg" viewBox="0 0 400 360" aria-label="오각형"></svg>
+  <div class="side">
+    <div class="formula" id="fml" aria-label="n 곱하기 (n 빼기 3) 나누기 2"><span id="fN">n</span><span id="fX">×</span><span id="fM">(n − 3)</span><span id="fD">÷ 2</span></div>
+    <div class="asm" aria-label="숫자를 넣은 식"><span id="aN">5</span><span id="aX">×</span><span id="aM">(5 − 3)</span><span id="aD">÷ 2</span><span id="aE" class="eq">= 5</span></div>
+    <hr id="rule">
+    <div class="build">
+      <div class="l" id="b1">n = <b>5</b></div>
+      <div class="l" id="b2">5 − 3 = <b>2</b></div>
+      <div class="l" id="b3">5 × 2 = <b>10</b></div>
+      <div class="l" id="b4">10 ÷ 2 = <b>5</b></div>
+    </div>
+  </div>
+</div>
+<div class="memo" id="memo"><small><span class="must">꼭! 꼭! 꼭! 외우기</span> 공식의 의미</small><b>n각형의 대각선의 개수 = n × (n − 3) ÷ 2</b><br>① 한 꼭짓점에서 <b>자기 자신</b>과 <b>양옆 2개</b>를 뺀 <b>(n − 3)개</b>를 그을 수 있다<br>② 꼭짓점이 <b>n개</b>이므로 <b>n × (n − 3)</b><br>③ 한 대각선을 <b>두 번</b> 세었으므로 <b>÷ 2</b></div>
+<div class="bar">
+  <button id="prev" type="button">← 이전</button>
+  <span class="step" id="stepNo"></span>
+  <label class="auto"><input type="checkbox" id="auto"> 자동</label>
+  <button id="next" class="go" type="button">다음 →</button>
+</div>
+</main>
+<script>
+(function () {
+  const N = 5, CX = 200, CY = 200, R = 128;
+  const P = []; for (let i = 0; i < N; i++) { const a = (90 - 360 * i / N) * Math.PI / 180; P.push([CX + R * Math.cos(a), CY - R * Math.sin(a)]); }
+  const NAMES = ['A', 'B', 'C', 'D', 'E'];
+  let h = '';
+  for (let i = 0; i < N; i++) { const a = P[i], b = P[(i + 1) % N]; h += '<line class="edge" x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '"/>'; }
+  h += '<line class="nb" id="nbB" x1="' + P[0][0] + '" y1="' + P[0][1] + '" x2="' + P[1][0] + '" y2="' + P[1][1] + '"/>';
+  h += '<line class="nb" id="nbE" x1="' + P[0][0] + '" y1="' + P[0][1] + '" x2="' + P[4][0] + '" y2="' + P[4][1] + '"/>';
+  for (let i = 0; i < N; i++) for (let k = 2; k <= N - 2; k++) { const j = (i + k) % N, a = P[i], b = P[j]; h += '<line class="dg" id="d' + i + j + '" x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '"/>'; }
+  const ar = (a, b, id) => { const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L, tx = b[0] - ux * 26, ty = b[1] - uy * 26; return '<polygon class="arrow" id="' + id + '" points="' + (b[0] - ux * 12) + ',' + (b[1] - uy * 12) + ' ' + (tx - uy * 11) + ',' + (ty + ux * 11) + ' ' + (tx + uy * 11) + ',' + (ty - ux * 11) + '"/>'; };
+  h += ar(P[0], P[2], 'arAC') + ar(P[2], P[0], 'arCA');
+  for (let i = 0; i < N; i++) {
+    const [x, y] = P[i], ox = (x - CX) / R, oy = (y - CY) / R;
+    h += '<circle class="vx" id="v' + i + '" cx="' + x + '" cy="' + y + '" r="11"/>';
+    h += '<text class="lbl" x="' + (x + ox * 28) + '" y="' + (y + oy * 28 + 7) + '">' + NAMES[i] + '</text>';
+    h += '<text class="cnt" id="c' + i + '" x="' + (x - ox * 30) + '" y="' + (y - oy * 30 + 9) + '">' + (i + 1) + '</text>';
+  }
+  h += '<text class="lbl p note" id="noteA" x="' + P[0][0] + '" y="' + (P[0][1] - 44) + '">나 자신 ✕</text>';
+  h += '<text class="lbl p note" id="noteB" x="' + ((P[0][0] + P[1][0]) / 2 + 46) + '" y="' + ((P[0][1] + P[1][1]) / 2 - 10) + '">변 ✕</text>';
+  h += '<text class="lbl p note" id="noteE" x="' + ((P[0][0] + P[4][0]) / 2 - 46) + '" y="' + ((P[0][1] + P[4][1]) / 2 - 10) + '">변 ✕</text>';
+  document.getElementById('svg').innerHTML = h;
+  const $ = id => document.getElementById(id);
+  const on = (id, c) => $(id).classList.add(c), off = (id, c) => $(id).classList.remove(c);
+  let timers = []; const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+
+  // 단계: 그림과 식만 바뀝니다. 설명은 육성.
+  const STEPS = [
+    { sec: 4, run: () => { on('ttl', 'show'); on('kw', 'blink'); } },                                   // 제목만
+    { sec: 4, run: () => { on('svg', 'show'); } },                                                      // 오각형
+    { sec: 5, run: () => { on('fml', 'show'); off('kw', 'blink'); } },                                  // 본 공식
+    { sec: 7, run: q => { on('fN', 'blink'); if (q) { for (let i = 0; i < N; i++) on('c' + i, 'show'); } else for (let i = 0; i < N; i++) later(() => { on('v' + i, 'blink'); on('c' + i, 'show'); later(() => off('v' + i, 'blink'), 800); }, 400 + i * 700); } },   // 1·2·3·4·5 세기
+    { sec: 4, run: () => { on('fN', 'blink'); on('rule', 'show'); on('b1', 'show'); on('aN', 'show'); } },                  // 오른쪽에 5
+    { sec: 6, run: () => { off('fN', 'blink'); on('fM', 'blink'); on('v0', 'me'); on('v0', 'blink'); on('noteA', 'show'); on('noteA', 'blink'); } },
+    { sec: 7, run: () => { off('v0', 'blink'); off('noteA', 'blink'); ['nbB', 'nbE', 'noteB', 'noteE'].forEach(id => { on(id, 'show'); on(id, 'blink'); }); on('v1', 'blink'); on('v4', 'blink'); } },
+    { sec: 5, run: () => { ['nbB', 'nbE', 'noteB', 'noteE', 'v1', 'v4'].forEach(id => off(id, 'blink')); on('d02', 'show'); on('d03', 'show'); } },   // 남은 2개
+    { sec: 4, run: () => { on('b2', 'show'); on('aM', 'show'); } },                                     // 오른쪽에 (5 − 3)
+    { sec: 9, run: q => { off('fM', 'blink'); on('fX', 'blink'); ['noteA', 'noteB', 'noteE', 'nbB', 'nbE'].forEach(id => off(id, 'show')); let k = 0; for (let i = 1; i < N; i++) for (let s = 2; s <= N - 2; s++) { const j = (i + s) % N; if (q) on('d' + i + j, 'show'); else later(() => on('d' + i + j, 'show'), 400 + k * 450); k++; } } },
+    { sec: 4, run: () => { on('fX', 'blink'); on('b3', 'show'); on('aX', 'show'); } },                  // 오른쪽에 ×
+    { sec: 8, run: () => { off('fX', 'blink'); on('fD', 'blink'); on('d02', 'dup'); on('d20', 'dup'); ['arAC', 'arCA'].forEach(id => { on(id, 'show'); on(id, 'blink'); }); } },
+    { sec: 4, run: () => { on('fD', 'blink'); ['arAC', 'arCA'].forEach(id => on(id, 'show')); on('d02', 'dup'); on('d20', 'dup'); on('b4', 'show'); on('aD', 'show'); } },   // 오른쪽에 ÷ 2
+    { sec: 6, run: () => { off('fD', 'blink'); off('d02', 'dup'); off('d20', 'dup'); ['arAC', 'arCA'].forEach(id => { off(id, 'show'); off(id, 'blink'); }); ['fN', 'fX', 'fM', 'fD'].forEach(id => on(id, 'lit')); on('aE', 'show'); off('kw', 'blink'); } },
+    { sec: 8, run: () => { on('memo', 'show'); } }
+  ];
+  let step = -1, autoT = null;
+  function reset() {
+    timers.forEach(clearTimeout); timers = [];
+    document.querySelectorAll('.blink,.show,.dup,.lit,.me').forEach(e => e.classList.remove('blink', 'show', 'dup', 'lit', 'me'));
+  }
+  function go(n) {
+    if (n < 0 || n >= STEPS.length) return;
+    reset();
+    for (let i = 0; i < n; i++) { STEPS[i].run(true); timers.forEach(clearTimeout); timers = []; }
+    STEPS[n].run(false);
+    step = n;
+    $('stepNo').textContent = (n + 1) + ' / ' + STEPS.length;
+    $('prev').disabled = n === 0; $('next').textContent = n === STEPS.length - 1 ? '처음부터' : '다음 →';
+    if (window.VID && VID.onChange) VID.onChange(n);
+    clearTimeout(autoT); if ($('auto').checked) autoT = setTimeout(() => go((step + 1) % STEPS.length), STEPS[n].sec * 1000);
+  }
+  $('next').addEventListener('click', () => go((step + 1) % STEPS.length));
+  $('prev').addEventListener('click', () => go(step - 1));
+  $('auto').addEventListener('change', () => go(step));
+  document.addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); $('next').click(); } if (e.key === 'ArrowLeft') $('prev').click(); });
+  window.VID = { k: 1, go: go, steps: STEPS.length, cur: () => step, onChange: null };
+  go(0);
+})();
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="common.js"></script>
+<script src="mathquiz.js"></script>
+</body>
+</html>
