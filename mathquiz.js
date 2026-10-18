@@ -42,9 +42,9 @@
     '.qz-done small{display:block;font-family:var(--body);font-size:16px;color:var(--sub);margin-top:6px}' +
     '#quiz.on{overflow:hidden}.qz-fig{flex:1 1 auto;min-height:110px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:22px;padding:6px}' +
     '.qz-fig svg.qz-svg{visibility:visible !important;width:100% !important;height:100% !important;max-height:none !important;max-width:none !important;margin:0 !important;flex:none}' +
-    '.qz-svg .fe{fill:#FFF8F4;stroke:#4A3B47;stroke-width:3.5;stroke-linejoin:round}.qz-svg .fl{stroke:#4A3B47;stroke-width:3.5;stroke-linecap:round}.qz-svg .fg{stroke:#58B894;stroke-width:3;stroke-linecap:round}' +
-    '.qz-svg .fd{stroke:#4A3B47;stroke-width:3;stroke-dasharray:8 7;stroke-linecap:round}.qz-svg .fx{stroke:#B9A8B3;stroke-width:3;stroke-dasharray:4 8;stroke-linecap:round}.qz-svg .fv{fill:#4A3B47}.qz-svg .fy{fill:#F2B24C;stroke:#4A3B47;stroke-width:2}' +
-    '.qz-svg text{font-family:var(--display);text-anchor:middle}.qz-svg .ft{font-size:19px;fill:#4A3B47}.qz-svg .fq{font-size:28px;fill:#E5484D}.qz-svg .fn{font-size:16px;fill:#8A7584}.qz-svg .fh{font-size:16px;fill:#8A7584}' +
+    '.qz-svg .fe{fill:#FFF8F4;stroke:#2B2129;stroke-width:3.5;stroke-linejoin:round}.qz-svg .fl{stroke:#2B2129;stroke-width:3.5;stroke-linecap:round}.qz-svg .fg{stroke:#58B894;stroke-width:3;stroke-linecap:round}' +
+    '.qz-svg .fd{stroke:#2B2129;stroke-width:3;stroke-dasharray:8 7;stroke-linecap:round}.qz-svg .fx{stroke:#B9A8B3;stroke-width:3;stroke-dasharray:4 8;stroke-linecap:round}.qz-svg .fv{fill:#2B2129}.qz-svg .fy{fill:#F2B24C;stroke:#2B2129;stroke-width:2}' +
+    '.qz-svg text{font-family:var(--display);text-anchor:middle}.qz-svg .ft{font-size:19px;fill:#2B2129}.qz-svg .fq{font-size:28px;fill:#E5484D}.qz-svg .fn{font-size:16px;fill:#5C4A57}.qz-svg .fh{font-size:16px;fill:#5C4A57}' +
     '.qz-slot{flex:none;height:132px;display:flex;flex-direction:column;justify-content:flex-start}.qz-slot .qz-why{flex:1;overflow:hidden}' +
     '@media (max-width:680px){.qz-q{padding:10px 14px;font-size:17px;line-height:1.45}.qz-c button{min-height:48px;font-size:17px}.qz-c{gap:8px}.qz-why{padding:10px 14px;font-size:14px;line-height:1.5}.qz-done{font-size:24px;padding:14px}#quiz{gap:7px}.qz-slot{height:126px}body.quizon h1{font-size:20px}}</style>');
   // 문제 그림(mathfig.js)을 불러와 그림이 오면 다시 그립니다
