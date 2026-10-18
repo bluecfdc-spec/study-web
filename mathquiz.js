@@ -111,6 +111,7 @@
   async function load() {
     if (path) rec = (await store.get(path)) || {};
     loaded = true;
+    if (new URLSearchParams(location.search).has('quiz')) { rec = {}; VID.go(VID.steps - 1); startQuiz(0); return; }   // 문제만 바로 풀어 보기(선생님 확인용)
     if (rec.done && !allSolved()) { save({ done: null }); delete rec.done; }   // 예전 기록: 오답이 있으면 완료 취소
     if (rec.q != null && rec.step === VID.steps - 1) { VID.go(VID.steps - 1); startQuiz(allSolved() ? Q.length : firstOpen()); }
     else if (rec.step) VID.go(Math.min(rec.step, VID.steps - 1));

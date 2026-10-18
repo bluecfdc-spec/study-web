@@ -3,7 +3,7 @@
 // 기록 위치: classes/gusan1/voice/{k}/{장면 번호} = { d: 'data:audio/...;base64,...', mime, ms, t }
 (function () {
   if (typeof VID === 'undefined' || typeof makeStore !== 'function') return;
-  if (new URLSearchParams(location.search).has('rec')) return;   // 녹음용 화면에서는 재생 안 함
+  if (new URLSearchParams(location.search).has('rec') || new URLSearchParams(location.search).has('quiz')) return;   // 녹음용·문제만 보기 화면에서는 재생 안 함
   const store = makeStore();
   const clips = {}, lens = {};   // 장면 번호 → Audio, 녹음 길이(ms)
   let cur = null, ready = false, nextText = '', guard = null;
