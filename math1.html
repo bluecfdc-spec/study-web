@@ -13,6 +13,7 @@
 <div class="row">
   <svg id="svg" viewBox="0 0 400 360" aria-label="오각형"></svg>
   <div class="side">
+    <div id="crew" aria-hidden="true"></div>
     <div class="formula" id="fml" aria-label="n 곱하기 (n 빼기 3) 나누기 2"><span id="fN">n</span><span id="fX">×</span><span id="fM">(n − 3)</span><span id="fD">÷ 2</span></div>
     <div class="asm" aria-label="숫자를 넣은 식"><span id="aN">5</span><span id="aX">×</span><span id="aM">(5 − 3)</span><span id="aD">÷ 2</span><span id="aE" class="eq">= 5</span></div>
     <hr id="rule">
@@ -60,7 +61,7 @@
 
   // 단계: 그림과 식만 바뀝니다. 설명은 육성.
   const STEPS = [
-    { sec: 4, run: () => { on('ttl', 'show'); on('kw', 'blink'); } },                                   // 제목만
+    { sec: 4, run: () => { on('ttl', 'show'); on('kw', 'blink'); on('svg', 'show'); } },               // 제목 + 오각형 미리 + 아이들 캐릭터(인사)
     { sec: 4, run: () => { on('svg', 'show'); } },                                                      // 오각형
     { sec: 5, run: () => { on('fml', 'show'); off('kw', 'blink'); } },                                  // 본 공식
     { sec: 7, run: q => { on('fN', 'blink'); if (q) { for (let i = 0; i < N; i++) on('c' + i, 'show'); } else for (let i = 0; i < N; i++) later(() => { on('v' + i, 'blink'); on('c' + i, 'show'); later(() => off('v' + i, 'blink'), 800); }, 400 + i * 700); } },   // 1·2·3·4·5 세기
@@ -90,6 +91,7 @@
     $('stepNo').textContent = (n + 1) + ' / ' + STEPS.length;
     $('prev').disabled = n === 0; $('next').textContent = n === STEPS.length - 1 ? '처음부터' : '다음 →';
     document.body.classList.toggle('final', n === STEPS.length - 1);   // 마지막(꼭 외우기) 장면: 메모만 보이기
+    document.body.classList.toggle('s0', n === 0);   // 첫 장면: 오른쪽에 아이들 캐릭터
     if (window.VID && VID.onChange) VID.onChange(n);
   }
   $('next').addEventListener('click', () => go((step + 1) % STEPS.length));
@@ -107,7 +109,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 // 항상 최신 파일을 받아 오도록 주소 뒤에 시간을 붙여 불러옵니다
-(function(){var v=Date.now();["common.js","mathquiz.js","mathvoice.js"].reduce(function(p,f){return p.then(function(){return new Promise(function(ok){var s=document.createElement("script");s.src=f+"?v="+v;s.onload=ok;document.body.appendChild(s);});});},Promise.resolve());})();
+(function(){var v=Date.now();["common.js","mathquiz.js","mathvoice.js","mathcrew.js"].reduce(function(p,f){return p.then(function(){return new Promise(function(ok){var s=document.createElement("script");s.src=f+"?v="+v;s.onload=ok;document.body.appendChild(s);});});},Promise.resolve());})();
 </script>
 </body>
 </html>
