@@ -3,6 +3,7 @@
 (function () {
   const box = document.getElementById('crew');
   if (!box || typeof makeStore !== 'function' || typeof avatarSVG !== 'function') return;
+  const SKIP = ['크리미'];   // 캐릭터로 띄우지 않을 이름 (선생님 시험용 계정 등)
   document.head.insertAdjacentHTML('beforeend', '<style>' +
     '.side{position:relative}#crew{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:clamp(10px,3vw,28px);visibility:hidden;pointer-events:none}' +
     'body.s0 #crew{visibility:visible}' +
@@ -14,7 +15,7 @@
     '@media (prefers-reduced-motion:reduce){#crew .bob{animation:none}}' +
     '@media (max-width:680px){#crew .kid svg{width:clamp(64px,21vw,96px) !important}}</style>');
   makeStore().get(BASE + '/students').then(v => {
-    const list = Object.keys(v || {}).map(id => v[id]).filter(s => s && s.name).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    const list = Object.keys(v || {}).map(id => v[id]).filter(s => s && s.name && !SKIP.some(n => s.name.indexOf(n) >= 0)).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
     box.innerHTML = list.map(s => '<div class="kid"><div class="bob">' + avatarSVG(s.avatar, 120) + '</div>' + esc(s.name) + '</div>').join('');
   }).catch(() => { });
 })();
