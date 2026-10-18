@@ -110,3 +110,10 @@ body.final .memo small{font-size:.8em;margin-bottom:12px}
   .bar a,.step{white-space:nowrap;font-size:12px}
   #say{padding:0 6px;font-size:18px}
 }
+/* === 글씨·선 더 진하게 (흐려 보인다는 의견 반영) === */
+:root{--fg:#2B2129;--sub:#5C4A57}
+.edge{stroke-width:5.5}
+.lbl{font-size:22px}
+.val.g{fill:#4A3A46}
+.cnt{fill:#C98A00}
+.val.p{fill:#B8335F}.val.b{fill:#3567C0}.val.m{fill:#24734F}

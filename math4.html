@@ -54,11 +54,11 @@
     const prev = P[(i + 4) % 5], cur = P[i], next = P[(i + 1) % 5], e = ext(prev, cur, 48);
     const aN = ang(cur, next), aP = ang(cur, prev), aE = ang(cur, e), aC = ang(cur, [CX, CY]);
     h += '<line class="ext" id="x' + i + '" x1="' + cur[0] + '" y1="' + cur[1] + '" x2="' + e[0] + '" y2="' + e[1] + '"/>';
-    h += wedge(cur, 34, aN, aP, aC, '#9A8A95', 'sec', 'in' + i, .55);                        // 내각 108° — 다각형 안쪽(중심 방향)
+    h += wedge(cur, 34, aN, aP, aC, '#76646F', 'sec', 'in' + i, .55);                        // 내각 108° — 다각형 안쪽(중심 방향)
     let dE = norm(aE - aN); if (dE > 180) dE -= 360; const mE = aN + dE / 2;                  // 외각의 이등분 방향(짧은 쪽)
     h += wedge(cur, 36, aN, aE, mE, COL[i], 'sec', 'out' + i);                                 // 외각 72° — 바깥쪽
-    h += '<text class="val" id="vi' + i + '" x="' + (cur[0] + 56 * Math.cos(aC * D2R)) + '" y="' + (cur[1] - 56 * Math.sin(aC * D2R) + 7) + '" fill="#5F4F5A">108°</text>';
-    h += '<text class="val" id="vo' + i + '" x="' + (cur[0] + 58 * Math.cos(mE * D2R)) + '" y="' + (cur[1] - 58 * Math.sin(mE * D2R) + 7) + '" fill="' + COL[i] + '">72°</text>';
+    h += '<text class="val" id="vi' + i + '" x="' + (cur[0] + 56 * Math.cos(aC * D2R)) + '" y="' + (cur[1] - 56 * Math.sin(aC * D2R) + 7) + '" fill="#3A2C36">108°</text>';
+    h += '<text class="val" id="vo' + i + '" x="' + (cur[0] + 58 * Math.cos(mE * D2R)) + '" y="' + (cur[1] - 58 * Math.sin(mE * D2R) + 7) + '" fill="' + ['#C9406E', '#A86F00', '#2E8A62', '#3F6FC4', '#8A5CC4'][i] + '">72°</text>';
   }
   for (let i = 0; i < N; i++) { const a = P[i], b = P[(i + 1) % N]; h += '<line class="edge" x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '"/>'; }
   for (let i = 0; i < N; i++) { const [x, y] = P[i]; h += '<circle class="vx" cx="' + x + '" cy="' + y + '" r="10"/>'; }
