@@ -1,7 +1,6 @@
 /* 수학 공식 설명 페이지(math1~3.html) 공통 스타일 */
 :root{--bg:#FFF4EE;--fg:#4A3B47;--sub:#8A7584;--pink:#F29BB5;--mint:#58B894;--mintL:#BFE8D9;--yellow:#F2B24C;--yellowL:#FFE39A;--line:#E8D6D9;--display:"Jua","Noto Sans KR",sans-serif;--body:"Noto Sans KR","Apple SD Gothic Neo",sans-serif}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#241C27;--fg:#F6EEF1;--sub:#B9A8B3;--mintL:#2E5A4A;--yellowL:#6A5422;--line:#4A3C4E;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#241C27;--fg:#F6EEF1;--sub:#B9A8B3;--mintL:#2E5A4A;--yellowL:#6A5422;--line:#4A3C4E;color-scheme:dark}
+:root{color-scheme:light}   /* 폰·PC가 다크 모드여도 항상 밝은 화면 + 진한 글씨 */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column}
