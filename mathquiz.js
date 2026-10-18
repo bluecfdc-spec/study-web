@@ -40,7 +40,15 @@
     '.qz-why{background:var(--yellowL);border-radius:18px;padding:14px 18px;font-size:clamp(16px,2.2vw,20px);line-height:1.6;word-break:keep-all}' +
     '.qz-why b{display:block;margin-bottom:4px}.qz-done{background:var(--mintL);border-radius:22px;padding:22px;text-align:center;font-family:var(--display);font-size:30px;line-height:1.4}' +
     '.qz-done small{display:block;font-family:var(--body);font-size:16px;color:var(--sub);margin-top:6px}' +
-    '@media (max-width:680px){.qz-q{padding:12px 14px;font-size:17px}.qz-c button{min-height:52px;font-size:17px}.qz-why{padding:10px 14px;font-size:14px;line-height:1.5}.qz-done{font-size:24px;padding:14px}#quiz{gap:8px}}</style>');
+    '#quiz.on{overflow:hidden}.qz-fig{flex:1 1 auto;min-height:110px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:22px;padding:6px}' +
+    '.qz-fig svg.qz-svg{visibility:visible !important;width:100% !important;height:100% !important;max-height:none !important;max-width:none !important;margin:0 !important;flex:none}' +
+    '.qz-svg .fe{fill:#FFF8F4;stroke:#4A3B47;stroke-width:3.5;stroke-linejoin:round}.qz-svg .fl{stroke:#4A3B47;stroke-width:3.5;stroke-linecap:round}.qz-svg .fg{stroke:#58B894;stroke-width:3;stroke-linecap:round}' +
+    '.qz-svg .fd{stroke:#4A3B47;stroke-width:3;stroke-dasharray:8 7;stroke-linecap:round}.qz-svg .fx{stroke:#B9A8B3;stroke-width:3;stroke-dasharray:4 8;stroke-linecap:round}.qz-svg .fv{fill:#4A3B47}.qz-svg .fy{fill:#F2B24C;stroke:#4A3B47;stroke-width:2}' +
+    '.qz-svg text{font-family:var(--display);text-anchor:middle}.qz-svg .ft{font-size:19px;fill:#4A3B47}.qz-svg .fq{font-size:28px;fill:#E5484D}.qz-svg .fn{font-size:16px;fill:#8A7584}.qz-svg .fh{font-size:16px;fill:#8A7584}' +
+    '.qz-slot{flex:none;height:132px;display:flex;flex-direction:column;justify-content:flex-start}.qz-slot .qz-why{flex:1;overflow:hidden}' +
+    '@media (max-width:680px){.qz-q{padding:10px 14px;font-size:17px;line-height:1.45}.qz-c button{min-height:48px;font-size:17px}.qz-c{gap:8px}.qz-why{padding:10px 14px;font-size:14px;line-height:1.5}.qz-done{font-size:24px;padding:14px}#quiz{gap:7px}.qz-slot{height:126px}body.quizon h1{font-size:20px}}</style>');
+  // 문제 그림(mathfig.js)을 불러와 그림이 오면 다시 그립니다
+  if (!window.MATHFIG) { const sc = document.createElement('script'); sc.src = 'mathfig.js?v=' + Date.now(); sc.onload = () => { if (quiz && quiz.classList.contains('on')) drawQuiz(); }; document.body.appendChild(sc); }
   const main = document.querySelector('main'), bar = document.querySelector('.bar');
   const quiz = document.createElement('div'); quiz.id = 'quiz'; main.insertBefore(quiz, bar);
   const $ = id => document.getElementById(id);
@@ -48,7 +56,7 @@
 
   function showQuiz(on) {
     document.querySelectorAll('.row,.memo,hr').forEach(e => { e.style.display = on ? 'none' : ''; });
-    quiz.classList.toggle('on', on);
+    quiz.classList.toggle('on', on); document.body.classList.toggle('quizon', on);
     $('prev').style.visibility = on ? 'hidden' : '';
   }
   const solved = i => (rec.ans || {})[i] === Q[i].a;
@@ -59,13 +67,14 @@
     if (qi >= Q.length) {
       const miss = Q.map((x, i) => i).filter(i => wrong[i]);
       quiz.innerHTML = '<div class="qz-done">숙제 완료! 🎉<small>' + Q.length + '문제 모두 정답' + (miss.length ? ' · 한 번에 못 맞힌 문제는 설명을 다시 읽어 봐요' : ' · 한 번에 다 맞혔어요, 완벽!') + '</small></div>' +
-        miss.map(i => '<div class="qz-why"><b>' + (i + 1) + '. ' + esc(Q[i].q) + '</b>정답: ' + esc(Q[i].c[Q[i].a]) + '<br>' + esc(Q[i].why) + '</div>').join('');
+        (miss.length ? '<div class="qz-why">' + miss.map(i => '<b>' + (i + 1) + '번 정답: ' + esc(Q[i].c[Q[i].a]) + '</b>' + esc(Q[i].hint)).join('<br>') + '</div>' : '');
       $('next').textContent = '대기실로'; $('next').disabled = false; return;
     }
     const x = Q[qi], ok = solved(qi);
     quiz.innerHTML = '<div class="qz-top"><span>공식 ' + VID.k + ' · 확인 문제</span><span>' + (qi + 1) + ' / ' + Q.length + '</span></div>' +
+      '<div class="qz-fig">' + (window.MATHFIG ? MATHFIG(VID.k, qi) : '') + '</div>' +
       '<div class="qz-q">' + esc(x.q) + '</div><div class="qz-c">' + x.c.map((c, i) => '<button type="button" data-i="' + i + '" class="' + (ok && i === x.a ? 'ok' : (tried.includes(i) ? 'no' : '')) + '"' + (ok || tried.includes(i) ? ' disabled' : '') + '>' + esc(c) + '</button>').join('') + '</div>' +
-      (ok ? '<div class="qz-why"><b>정답이에요!</b>' + esc(x.why) + '</div>' : tried.length ? '<div class="qz-why"><b>아쉬워요. 다시 골라 봐요 (' + tried.length + '번 틀림)</b>힌트: ' + esc(x.hint) + '</div>' : '');
+      '<div class="qz-slot">' + (ok ? '<div class="qz-why"><b>정답이에요!</b>' + esc(x.why) + '</div>' : tried.length ? '<div class="qz-why"><b>아쉬워요. 다시 골라 봐요 (' + tried.length + '번 틀림)</b>힌트: ' + esc(x.hint) + '</div>' : '') + '</div>';
     $('next').textContent = ok ? (qi + 1 < Q.length ? '다음 문제 →' : '결과 보기') : (tried.length ? '다시 풀기' : '답을 골라요');
     $('next').disabled = !ok;
   }
