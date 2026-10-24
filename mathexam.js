@@ -396,21 +396,24 @@
     if (st >= 3) h += IN(BOX(282, 196, 112, 46, '#fff') + TL(338, 226, '5 + 8 = 13', 20));
     return svg(h);
   };
-  // 평행선과 동위각·엇각 (a~h)
+  // 평행선과 동위각·엇각 (a~h): 가로선 l, m 과 오른쪽 위로 올라가는 직선 n. 각 자리는 교점에서의 방향(도)으로 정확히 그린다.
   X.FIG.alt = st => {
-    const l1 = 80, l2 = 180, tx = y => 110 + (180 - y) * .9;   // 가로선 두 개와 비스듬한 선
-    const Pa = [tx(l1), l1], Pb = [tx(l2), l2];
-    let h = seg([20, l1], [380, l1]) + seg([20, l2], [380, l2]) + seg([tx(240), 240], [tx(20), 20]) + TL(392, l1 + 5, 'l', 14) + TL(392, l2 + 5, 'm', 14);
-    const L = (p, dx, dy, s, col) => TL(p[0] + dx, p[1] + dy, s, 15, col || C.ink);
-    const pos = { a: [-26, -10], b: [26, -10], c: [-26, 20], d: [26, 20] };
-    const hi = (p, name, col, on) => !on ? '' : sector(p[0], p[1], 20, { a: 138, b: 0, c: 180, d: 318 }[name], { a: 180, b: 42, c: 222, d: 360 }[name], col);
-    const sA = st === 1, sB = st === 2;
-    h += hi(Pa, 'b', C.blue, sA) + hi(Pb, 'b', C.blue, sA) + hi(Pa, 'd', C.pink, sB) + hi(Pb, 'a', C.pink, sB);
-    h += L(Pa, pos.a[0], pos.a[1], 'a') + L(Pa, pos.b[0], pos.b[1], 'b') + L(Pa, pos.c[0], pos.c[1], 'c') + L(Pa, pos.d[0], pos.d[1], 'd') +
-      L(Pb, pos.a[0], pos.a[1], 'e') + L(Pb, pos.b[0], pos.b[1], 'f') + L(Pb, pos.c[0], pos.c[1], 'g') + L(Pb, pos.d[0], pos.d[1], 'h');
-    if (st === 1) h += IN(TL(18, 40, '동위각 = 같은 자리', 16, C.blue, 'start') + TL(18, 62, 'b와 f (오른쪽 위끼리)', 13, C.blue, 'start'));
-    if (st === 2) h += IN(TL(18, 40, '엇각 = 안쪽에서 엇갈린 자리', 16, '#C2185B', 'start') + TL(18, 62, 'd와 e (Z 모양)', 13, '#C2185B', 'start'));
-    if (st >= 3) h += IN(BOX(20, 24, 230, 52, '#fff') + TL(135, 46, 'l ∥ m 이면', 15) + TL(135, 68, '동위각도 같고, 엇각도 같다', 14, C.green) + sector(Pa[0], Pa[1], 18, 0, 42, C.blue) + sector(Pb[0], Pb[1], 18, 0, 42, C.blue) + sector(Pa[0], Pa[1], 18, 318, 360, C.pink) + sector(Pb[0], Pb[1], 18, 138, 180, C.pink));
+    const yl = 92, ym = 196, th = 52;                              // 직선 n 이 가로선과 이루는 각(도)
+    const tx = y => 150 + (ym - y) / Math.tan(th * Math.PI / 180);  // y 높이에서 직선 n 의 x
+    const Pa = [tx(yl), yl], Pb = [tx(ym), ym];
+    let h = seg([16, yl], [372, yl]) + seg([16, ym], [372, ym]) + seg([tx(250), 250], [tx(30), 30]) + TL(386, yl + 5, 'l', 15) + TL(386, ym + 5, 'm', 15) + TL(tx(30) + 14, 30, 'n', 15);
+    // 네 자리: 위오른쪽 0~th, 위왼쪽 th~180, 아래왼쪽 180~180+th, 아래오른쪽 180+th~360
+    const R = { ur: [0, th], ul: [th, 180], ll: [180, 180 + th], lr: [180 + th, 360] };
+    const wedge = (p, k, col) => sector(p[0], p[1], 30, R[k][0], R[k][1], col);
+    const lab = (p, k, s) => { const m = (R[k][0] + R[k][1]) / 2, q = pt(p[0], p[1], 44, m); return TL(q[0], q[1] + 5, s, 16); };
+    // 글자 자리는 암기 시트와 똑같이: a 위·오른쪽, b 위·왼쪽, c 아래·왼쪽, d 아래·오른쪽 (m 에서는 e f g h)
+    if (st === 1) h += wedge(Pa, 'ur', C.blue) + wedge(Pb, 'ur', C.blue);     // 동위각 a 와 e: 둘 다 '위 오른쪽' 자리
+    if (st === 2) h += wedge(Pa, 'll', C.pink) + wedge(Pb, 'ur', C.pink);     // 엇각 c 와 e: 안쪽(두 직선 사이)에서 엇갈린 자리 → Z 모양
+    if (st >= 3) h += wedge(Pa, 'ur', C.blue) + wedge(Pb, 'ur', C.blue) + wedge(Pa, 'lr', C.pink) + wedge(Pb, 'ul', C.pink);   // 동위각 a·e(파랑), 엇각 d·f(분홍)
+    h += lab(Pa, 'ur', 'a') + lab(Pa, 'ul', 'b') + lab(Pa, 'll', 'c') + lab(Pa, 'lr', 'd') + lab(Pb, 'ur', 'e') + lab(Pb, 'ul', 'f') + lab(Pb, 'll', 'g') + lab(Pb, 'lr', 'h');
+    if (st === 1) h += IN(BOX(216, 210, 178, 46, '#fff') + TL(305, 229, '동위각 = 같은 자리', 14, C.blue) + TL(305, 248, 'a와 e: 둘 다 위·오른쪽', 12, C.blue));
+    if (st === 2) h += IN(BOX(216, 210, 178, 46, '#fff') + TL(305, 229, '엇각 = 안쪽에서 엇갈린 자리', 12.5, '#C2185B') + TL(305, 248, 'c와 e: Z 모양 (d와 f도 엇각)', 11, '#C2185B'));
+    if (st >= 3) h += IN(BOX(216, 210, 178, 46, '#fff') + TL(305, 229, 'l ∥ m 이면', 14) + TL(305, 248, '동위각 a=e, 엇각 d=f', 13, C.green));
     return svg(h);
   };
   // 수선의 발
@@ -437,7 +440,7 @@
         caps: ['한 각이 50°예요.', '마주 보는 각도 50°. 맞꼭지각은 항상 같아요.', '옆 각은? 일직선(평각)은 180°니까 180 − 50 = 130°. 둘 다 130°.'] },
       { type: 'figure', fig: 'alt', title: '동위각과 엇각: 자리 이름이에요',
         lead: '직선 두 개에 비스듬한 선 하나. 각이 8개 생겨요. 이름은 "자리"로 정해요.',
-        caps: ['동위각 = 같은 자리. b는 오른쪽 위, f도 오른쪽 위. 그래서 b와 f는 동위각.', '엇각 = 두 직선 안쪽에서 엇갈린 자리. d와 e. Z 모양을 떠올려요.', 'l과 m이 평행이면 동위각끼리 같고, 엇각끼리도 같아요. 평행이 아니면 이름만 있고 크기는 달라요.'] },
+        caps: ['동위각 = 같은 자리. a는 위·오른쪽, e도 위·오른쪽. 그래서 a와 e는 동위각. (b와 f, c와 g, d와 h도 동위각)', '엇각 = 두 직선 안쪽(l과 m 사이)에서 엇갈린 자리. c와 e가 엇각. Z 모양을 떠올려요. d와 f도 엇각이에요.', 'l과 m이 평행이면 동위각끼리 같고, 엇각끼리도 같아요. 평행이 아니면 이름만 있고 크기는 달라요.'] },
       { type: 'figure', fig: 'foot', title: '수선의 발: 수직으로 내려 발이 닿는 자리',
         lead: '점 P가 직선 l 위에 떠 있어요. P에서 l까지 가장 짧은 길은?',
         caps: ['수직으로 똑바로 내려가는 길이에요. 이 선을 수선이라고 해요.', '수선이 직선과 만나는 점 H가 수선의 발.', '선분 PH의 길이가 점 P와 직선 l 사이의 거리예요. 작년 4번이 이 문제.'] },
